@@ -1,4 +1,19 @@
-# Upload
+# Upload Portal
+
+A simple portal for users to upload `.tar.gz` files containing HTML, JS, and CSS files to be deployed to static site providers.
+
+## Features
+
+-   **Simple Upload**: Users upload `.tar.gz` archives.
+-   **Static Site Deployment**: Deploys to providers like Cloudflare or Netlify.
+-   **Admin Management**: An Admin user manages hosting provider configurations for users, keeping it simple for the end-user.
+-   **Webhook Notifications**: Users can configure webhooks to receive alerts on successful deployments or failures.
+
+## Usage
+
+This tool is currently used by a small group of 3-6 people who primarily exchange files via Discord.
+
+## Development
 
 To start your Phoenix server:
 
@@ -6,13 +21,3 @@ To start your Phoenix server:
 * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
-
-## Learn more
-
-* Official website: https://www.phoenixframework.org/
-* Guides: https://hexdocs.pm/phoenix/overview.html
-* Docs: https://hexdocs.pm/phoenix
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
