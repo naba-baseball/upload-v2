@@ -39,7 +39,9 @@ defmodule UploadWeb.Router do
   scope "/admin", UploadWeb do
     pipe_through [:browser, :require_authenticated_user, :require_admin_user]
 
-    get "/", AdminController, :index
+    live_session :admin, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
+      live "/", AdminLive
+    end
   end
 
   # Other scopes may use custom stacks.

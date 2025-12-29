@@ -12,7 +12,8 @@ defmodule UploadWeb.DashboardControllerTest do
 
     test "renders dashboard if logged in", %{conn: conn} do
       user = user_fixture()
-      conn = 
+
+      conn =
         conn
         |> init_test_session(%{user_id: user.id})
         |> get(~p"/dashboard")

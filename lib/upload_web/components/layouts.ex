@@ -31,7 +31,9 @@ defmodule UploadWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
-  slot :inner_block, required: true
+  attr :current_user, :map, default: nil
+  attr :inner_content, :any, default: nil
+  slot :inner_block
 
   def app(assigns) do
     ~H"""
@@ -45,26 +47,31 @@ defmodule UploadWeb.Layouts do
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
           <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
             <.theme_toggle />
           </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
+          <%= if @current_user do %>
+            <li>
+              <span class="text-sm font-semibold">{@current_user.name}</span>
+            </li>
+            <li>
+              <a href={~p"/auth/signout"} class="btn btn-secondary btn-sm">
+                Sign out
+              </a>
+            </li>
+          <% else %>
+            <li>
+              <a href={~p"/auth/discord"} class="btn btn-primary btn-sm">
+                Sign in with Discord
+              </a>
+            </li>
+          <% end %>
         </ul>
       </div>
     </header>
 
     <main class="px-4 py-20 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
+        {render_slot(@inner_block) || @inner_content}
       </div>
     </main>
 

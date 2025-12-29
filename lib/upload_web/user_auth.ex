@@ -23,6 +23,7 @@ defmodule UploadWeb.UserAuth do
 
   def require_admin_user(conn, _opts) do
     user = conn.assigns[:current_user]
+
     if user && user.role == "admin" do
       conn
     else
@@ -30,6 +31,22 @@ defmodule UploadWeb.UserAuth do
       |> put_flash(:error, "You do not have access to this page.")
       |> redirect(to: "/")
       |> halt()
+    end
+  end
+
+  def on_mount(:mount_current_user, _params, session, socket) do
+    {:cont, mount_current_user(session, socket)}
+  end
+
+  defp mount_current_user(session, socket) do
+    case session do
+      %{"user_id" => user_id} ->
+        Phoenix.Component.assign_new(socket, :current_user, fn ->
+          Accounts.get_user(user_id)
+        end)
+
+      _ ->
+        Phoenix.Component.assign_new(socket, :current_user, fn -> nil end)
     end
   end
 end

@@ -4,18 +4,19 @@ defmodule Upload.Accounts do
   alias Upload.Accounts.User
 
   def get_user!(id), do: Repo.get!(User, id)
-  
+
   def get_user(id), do: Repo.get(User, id)
 
   def find_or_create_user(auth) do
     uid = to_string(auth.uid)
     provider = to_string(auth.provider)
-    
+
     query = from u in User, where: u.provider == ^provider and u.uid == ^uid
-    
+
     case Repo.one(query) do
       nil ->
         create_user(auth)
+
       user ->
         {:ok, user}
     end

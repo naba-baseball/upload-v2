@@ -3,17 +3,35 @@
   <p class="mb-4">This is a demo application.</p>
 
   <%= if @current_user do %>
-    <p>You are logged in as <%= @current_user.name %>.</p>
+    <p>You are logged in as {@current_user.name}.</p>
     <div class="mt-4">
-      <.link navigate={~p"/dashboard"} class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Go to Dashboard</.link>
+      <.link
+        navigate={~p"/dashboard"}
+        class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      >
+        Go to Dashboard
+      </.link>
       <%= if @current_user.role == "admin" do %>
-        <.link navigate={~p"/admin"} class="ml-2 rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700">Go to Admin Portal</.link>
+        <.link
+          navigate={~p"/admin"}
+          class="ml-2 rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+        >
+          Go to Admin Portal
+        </.link>
       <% end %>
-      <.link href={~p"/auth/signout"} class="ml-2 rounded border border-gray-400 px-4 py-2 hover:bg-gray-100">Sign out</.link>
+      <.link
+        href={~p"/auth/signout"}
+        class="ml-2 rounded border border-gray-400 px-4 py-2 hover:bg-gray-100"
+      >
+        Sign out
+      </.link>
     </div>
   <% else %>
     <div class="mt-4">
-      <.link href={~p"/auth/discord"} class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+      <.link
+        href={~p"/auth/discord"}
+        class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+      >
         Sign in with Discord
       </.link>
     </div>
