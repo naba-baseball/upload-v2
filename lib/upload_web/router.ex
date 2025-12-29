@@ -1,5 +1,6 @@
 defmodule UploadWeb.Router do
   use UploadWeb, :router
+  import UploadWeb.UserAuth
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -8,16 +9,37 @@ defmodule UploadWeb.Router do
     plug :put_root_layout, html: {UploadWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_user
   end
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
+  scope "/auth", UploadWeb do
+    pipe_through :browser
+
+    get "/signout", AuthController, :signout
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+  end
+
   scope "/", UploadWeb do
     pipe_through :browser
 
     get "/", PageController, :home
+  end
+
+  scope "/", UploadWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/dashboard", DashboardController, :index
+  end
+
+  scope "/admin", UploadWeb do
+    pipe_through [:browser, :require_authenticated_user, :require_admin_user]
+
+    get "/", AdminController, :index
   end
 
   # Other scopes may use custom stacks.
