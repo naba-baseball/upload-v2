@@ -33,14 +33,18 @@ defmodule UploadWeb.Router do
   scope "/", UploadWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/dashboard", DashboardController, :index
+    live_session :authenticated, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
+      live "/dashboard", DashboardLive
+    end
   end
 
-  scope "/admin", UploadWeb do
+  scope "/admin", UploadWeb.Admin do
     pipe_through [:browser, :require_authenticated_user, :require_admin_user]
 
     live_session :admin, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
-      live "/", AdminLive
+      live "/sites", SitesLive
+      live "/users", UsersLive
+      live "/upload", UploadLive
     end
   end
 

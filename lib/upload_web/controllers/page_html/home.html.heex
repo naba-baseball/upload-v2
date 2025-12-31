@@ -13,7 +13,7 @@
       </.link>
       <%= if @current_user.role == "admin" do %>
         <.link
-          navigate={~p"/admin"}
+          navigate={~p"/admin/sites"}
           class="ml-2 rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
         >
           Go to Admin Portal

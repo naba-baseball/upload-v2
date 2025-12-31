@@ -10,6 +10,8 @@ defmodule Upload.Accounts.User do
     field :avatar_url, :string
     field :role, :string
 
+    many_to_many :sites, Upload.Sites.Site, join_through: Upload.Sites.UserSite
+
     timestamps(type: :utc_datetime)
   end
 

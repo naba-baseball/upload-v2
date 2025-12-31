@@ -53,7 +53,7 @@ defmodule UploadWeb.AuthControllerTest do
         |> assign(:ueberauth_auth, admin_auth)
         |> get(~p"/auth/discord/callback")
 
-      assert redirected_to(conn) == ~p"/admin"
+      assert redirected_to(conn) == ~p"/admin/sites"
       assert get_session(conn, :user_id) == admin.id
     end
 
@@ -62,7 +62,7 @@ defmodule UploadWeb.AuthControllerTest do
       conn = get(conn, ~p"/auth/discord/callback")
 
       # Since we defined a catch-all callback/2 in AuthController, it should handle cases without auth struct
-      # However, Ueberauth plug might intercept first. 
+      # However, Ueberauth plug might intercept first.
       # In our controller: def callback(conn, _params) matches if the first one fails matching.
 
       assert redirected_to(conn) == ~p"/"
