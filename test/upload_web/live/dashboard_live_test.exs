@@ -189,4 +189,73 @@ defmodule UploadWeb.DashboardLiveTest do
       assert html =~ "border-indigo"
     end
   end
+
+  describe "single site upload" do
+    test "shows upload form inline when user has exactly 1 site", %{conn: conn} do
+      user = user_fixture()
+      site = site_fixture(%{name: "Solo Site"})
+      assign_user_to_site(user, site)
+
+      conn = init_test_session(conn, %{user_id: user.id})
+
+      {:ok, view, html} = live(conn, ~p"/dashboard")
+
+      # Should show site name but not the "Your Sites" heading
+      assert html =~ "Solo Site"
+      refute html =~ "Your Sites"
+
+      # Should show upload form inline
+      assert html =~ "Upload Site Archive"
+      assert has_element?(view, "form#upload-form")
+      assert has_element?(view, "input[type='file']")
+    end
+
+    test "upload button is disabled when no file selected for single site", %{conn: conn} do
+      user = user_fixture()
+      site = site_fixture()
+      assign_user_to_site(user, site)
+
+      conn = init_test_session(conn, %{user_id: user.id})
+
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      assert has_element?(view, "button[type='submit'][disabled]")
+    end
+
+    test "shows site cards when user has multiple sites", %{conn: conn} do
+      user = user_fixture()
+      site1 = site_fixture(%{name: "First Site"})
+      site2 = site_fixture(%{name: "Second Site"})
+      assign_user_to_site(user, site1)
+      assign_user_to_site(user, site2)
+
+      conn = init_test_session(conn, %{user_id: user.id})
+
+      {:ok, view, html} = live(conn, ~p"/dashboard")
+
+      # Should show "Your Sites" heading
+      assert html =~ "Your Sites"
+
+      # Should NOT show inline upload form
+      refute html =~ "Upload Site Archive"
+      refute has_element?(view, "form#upload-form")
+
+      # Should show site cards with upload links
+      assert html =~ "First Site"
+      assert html =~ "Second Site"
+      assert has_element?(view, "a[href='/sites/#{site1.id}/upload']")
+    end
+
+    test "file input is required for single site upload", %{conn: conn} do
+      user = user_fixture()
+      site = site_fixture()
+      assign_user_to_site(user, site)
+
+      conn = init_test_session(conn, %{user_id: user.id})
+
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      assert has_element?(view, "input[type='file'][required]")
+    end
+  end
 end
