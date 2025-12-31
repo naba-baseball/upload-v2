@@ -53,15 +53,23 @@ defmodule UploadWeb.DashboardLive do
               <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
                 {site.name}
               </h3>
-              <a
-                href={"https://#{Upload.Sites.Site.full_domain(site)}"}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-mono text-sm"
-              >
-                <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-                {Upload.Sites.Site.full_domain(site)}
-              </a>
+              <div class="flex flex-col gap-2">
+                <a
+                  href={"https://#{Upload.Sites.Site.full_domain(site)}"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-mono text-sm"
+                >
+                  <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
+                  {Upload.Sites.Site.full_domain(site)}
+                </a>
+                <.link
+                  navigate={~p"/sites/#{site.id}/upload"}
+                  class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> Upload
+                </.link>
+              </div>
             </div>
           </div>
         <% else %>

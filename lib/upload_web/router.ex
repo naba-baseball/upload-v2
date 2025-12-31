@@ -35,6 +35,7 @@ defmodule UploadWeb.Router do
 
     live_session :authenticated, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
       live "/dashboard", DashboardLive
+      live "/sites/:site_id/upload", SiteUploadLive
     end
   end
 
@@ -44,7 +45,6 @@ defmodule UploadWeb.Router do
     live_session :admin, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
       live "/sites", SitesLive
       live "/users", UsersLive
-      live "/upload", UploadLive
     end
   end
 

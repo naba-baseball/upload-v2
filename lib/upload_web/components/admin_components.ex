@@ -75,9 +75,6 @@ defmodule UploadWeb.AdminComponents do
       <.admin_nav_link navigate={~p"/admin/users"} active={@active == "users"}>
         Assign Users
       </.admin_nav_link>
-      <.admin_nav_link navigate={~p"/admin/upload"} active={@active == "upload"}>
-        Upload Files
-      </.admin_nav_link>
     </div>
     """
   end
