@@ -27,7 +27,7 @@ defmodule Upload.Accounts do
       provider: to_string(auth.provider),
       uid: to_string(auth.uid),
       email: auth.info.email,
-      name: auth.info.name || auth.info.nickname,
+      name: Map.get(auth.info, :name) || Map.get(auth.info, :nickname),
       avatar_url: auth.info.image,
       role: "user"
     }
