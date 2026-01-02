@@ -9,10 +9,6 @@ A simple portal for users to upload `.tar.gz` files containing HTML, JS, and CSS
 -   **Admin Management**: An Admin user manages hosting provider configurations for users, keeping it simple for the end-user.
 -   **Webhook Notifications**: Users can configure webhooks to receive alerts on successful deployments or failures.
 
-## Usage
-
-This tool is currently used by a small group of 3-6 people who primarily exchange files via Discord.
-
 ## Development
 
 To start your Phoenix server:
