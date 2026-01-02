@@ -50,13 +50,8 @@ defmodule UploadWeb.Admin.UsersLive do
         <:row>
           <tr :for={{id, user} <- @streams.users} id={id}>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <img
-                  :if={user.avatar_url}
-                  src={user.avatar_url}
-                  alt={user.name}
-                  class="h-8 w-8 rounded-full mr-2 ring-2 ring-gray-200 dark:ring-gray-700"
-                />
+              <div class="flex items-center gap-2">
+                <.user_avatar user={user} size="sm" />
                 <span class="font-medium text-gray-900 dark:text-gray-100">{user.name}</span>
               </div>
             </td>

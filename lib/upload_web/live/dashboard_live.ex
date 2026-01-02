@@ -84,16 +84,15 @@ defmodule UploadWeb.DashboardLive do
               Manage sites, users, and uploads
             </p>
           </div>
-          <.link
+          <.button
             navigate={~p"/admin/sites"}
-            class="px-4 py-2 bg-white dark:bg-gray-100 text-indigo-600 dark:text-indigo-700 rounded hover:bg-indigo-50 dark:hover:bg-gray-200 font-semibold transition-colors"
           >
             Go to Admin Panel
-          </.link>
+          </.button>
         </div>
       <% end %>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-700">
+      <.card variant="white">
         <%= if @single_site do %>
           <%!-- Single site: show upload form inline --%>
           <div class="mb-6">
@@ -127,10 +126,7 @@ defmodule UploadWeb.DashboardLive do
 
           <%= if @sites != [] do %>
             <div class="grid gap-4 sm:grid-cols-2">
-              <div
-                :for={site <- @sites}
-                class="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 rounded-lg p-6 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
-              >
+              <.card :for={site <- @sites} variant="indigo" hover class="p-6">
                 <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
                   {site.name}
                 </h3>
@@ -151,38 +147,22 @@ defmodule UploadWeb.DashboardLive do
                     <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> Upload
                   </.link>
                 </div>
-              </div>
+              </.card>
             </div>
           <% else %>
-            <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-              <p class="text-gray-600 dark:text-gray-400">
-                You haven't been assigned to any sites yet. Please contact an administrator to get access.
-              </p>
-            </div>
+            <.empty_state icon="hero-inbox">
+              You haven't been assigned to any sites yet. Please contact an administrator to get access.
+            </.empty_state>
           <% end %>
         <% end %>
-      </div>
+      </.card>
 
-      <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-700">
+      <.card variant="white" class="mt-8">
         <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
           Account Information
         </h2>
-        <div class="space-y-3">
-          <div class="flex items-center gap-3">
-            <img
-              src={@current_user.avatar_url}
-              alt={@current_user.name}
-              class="w-16 h-16 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
-            />
-            <div>
-              <p class="font-semibold text-gray-900 dark:text-gray-100">
-                {@current_user.name}
-              </p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{@current_user.email}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <.user_profile user={@current_user} />
+      </.card>
     </div>
     """
   end

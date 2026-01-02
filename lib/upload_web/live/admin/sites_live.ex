@@ -160,13 +160,13 @@ defmodule UploadWeb.Admin.SitesLive do
       active_tab="sites"
     >
       <:actions>
-        <.admin_button phx-click="new_site">
+        <.button phx-click="new_site">
           + New Site
-        </.admin_button>
+        </.button>
       </:actions>
 
       <div id="sites-list" phx-update="stream" class="space-y-4">
-        <.admin_card :for={{id, site} <- @streams.sites} id={id}>
+        <.card :for={{id, site} <- @streams.sites} id={id}>
           <%= if @editing_site_id == site.id do %>
             <.site_form
               form={@site_form}
@@ -176,18 +176,18 @@ defmodule UploadWeb.Admin.SitesLive do
           <% else %>
             <.site_display site={site} />
           <% end %>
-        </.admin_card>
+        </.card>
       </div>
 
       <%= if @editing_site_id == :new do %>
-        <.admin_card class="mt-4">
+        <.card class="mt-4">
           <h3 class="font-semibold mb-4 text-gray-900 dark:text-gray-100">New Site</h3>
           <.site_form
             form={@site_form}
             id="new-site-form"
             submit_label="Create Site"
           />
-        </.admin_card>
+        </.card>
       <% end %>
     </.admin_layout>
     """
@@ -210,12 +210,12 @@ defmodule UploadWeb.Admin.SitesLive do
           URL: https://{subdomain_preview(@form[:subdomain].value)}
         </p>
         <div class="flex gap-2">
-          <.admin_button_success type="submit">
+          <.button variant="success" type="submit">
             {@submit_label}
-          </.admin_button_success>
-          <.admin_button_secondary type="button" phx-click="cancel_site_edit">
+          </.button>
+          <.button variant="secondary" type="button" phx-click="cancel_site_edit">
             Cancel
-          </.admin_button_secondary>
+          </.button>
         </div>
       </div>
     </.form>
@@ -234,16 +234,18 @@ defmodule UploadWeb.Admin.SitesLive do
         </p>
       </div>
       <div class="flex gap-2">
-        <.admin_button_edit phx-click="edit_site" phx-value-site-id={@site.id}>
+        <.button variant="primary" size="sm" phx-click="edit_site" phx-value-site-id={@site.id}>
           Edit
-        </.admin_button_edit>
-        <.admin_button_danger
+        </.button>
+        <.button
+          variant="danger"
+          size="sm"
           phx-click="delete_site"
           phx-value-site-id={@site.id}
           data-confirm="Are you sure you want to delete this site?"
         >
           Delete
-        </.admin_button_danger>
+        </.button>
       </div>
     </div>
     """

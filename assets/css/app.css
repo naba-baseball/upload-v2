@@ -103,3 +103,48 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+/* Semantic color utilities for consistent dark mode support */
+@layer components {
+  .text-primary {
+    color: theme(colors.gray.900);
+    [data-theme="dark"] & {
+      color: theme(colors.gray.100);
+    }
+  }
+
+  .text-secondary {
+    color: theme(colors.gray.600);
+    [data-theme="dark"] & {
+      color: theme(colors.gray.400);
+    }
+  }
+
+  .text-muted {
+    color: theme(colors.gray.500);
+    [data-theme="dark"] & {
+      color: theme(colors.gray.500);
+    }
+  }
+
+  .bg-surface {
+    background-color: theme(colors.white);
+    [data-theme="dark"] & {
+      background-color: theme(colors.gray.800);
+    }
+  }
+
+  .bg-surface-secondary {
+    background-color: theme(colors.gray.50);
+    [data-theme="dark"] & {
+      background-color: oklch(25.26% 0.014 253.1 / 0.5);
+    }
+  }
+
+  .border-default {
+    border-color: theme(colors.gray.200);
+    [data-theme="dark"] & {
+      border-color: theme(colors.gray.700);
+    }
+  }
+}

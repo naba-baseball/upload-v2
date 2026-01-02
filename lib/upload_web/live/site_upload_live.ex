@@ -67,15 +67,10 @@ defmodule UploadWeb.SiteUploadLive do
     <Layouts.app flash={@flash}>
       <div class="mx-auto max-w-2xl py-8 px-4">
         <div class="mb-6">
-          <.link
-            navigate={~p"/dashboard"}
-            class="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-          >
-            <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Dashboard
-          </.link>
+          <.back_link navigate={~p"/dashboard"}>Back to Dashboard</.back_link>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-700">
+        <.card variant="white">
           <div class="mb-6">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Upload to {@site.name}
@@ -91,7 +86,7 @@ defmodule UploadWeb.SiteUploadLive do
           </p>
 
           <.upload_form upload={@uploads.site_archive} />
-        </div>
+        </.card>
       </div>
     </Layouts.app>
     """
