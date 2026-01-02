@@ -21,9 +21,10 @@ defmodule UploadWeb.UserAuthTest do
 
     test "assigns current_user if session has user_id", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
-      conn = 
-        conn 
-        |> put_session(:user_id, user.id) 
+
+      conn =
+        conn
+        |> put_session(:user_id, user.id)
         |> UserAuth.fetch_current_user([])
 
       assert conn.assigns.current_user.id == user.id
@@ -35,11 +36,14 @@ defmodule UploadWeb.UserAuthTest do
       conn = conn |> fetch_flash() |> UserAuth.require_authenticated_user([])
       assert conn.halted
       assert redirected_to(conn) == ~p"/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "You must log in to access this page."
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must log in to access this page."
     end
 
     test "does not redirect if user is authenticated", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
+
       conn =
         conn
         |> assign(:current_user, user)
@@ -52,6 +56,7 @@ defmodule UploadWeb.UserAuthTest do
   describe "require_admin_user/2" do
     test "redirects if user is not admin", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
+
       conn =
         conn
         |> assign(:current_user, user)
@@ -60,11 +65,14 @@ defmodule UploadWeb.UserAuthTest do
 
       assert conn.halted
       assert redirected_to(conn) == ~p"/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "You do not have access to this page."
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You do not have access to this page."
     end
 
     test "does not redirect if user is admin", %{conn: conn} do
       admin = AccountsFixtures.admin_fixture()
+
       conn =
         conn
         |> assign(:current_user, admin)

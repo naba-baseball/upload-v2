@@ -16,7 +16,7 @@ defmodule UploadWeb.AuthController do
           user_role: user.role
         )
 
-        path = if user.role == "admin", do: ~p"/admin", else: ~p"/dashboard"
+        path = if user.role == "admin", do: ~p"/admin/sites", else: ~p"/dashboard"
 
         conn
         |> configure_session(renew: true)

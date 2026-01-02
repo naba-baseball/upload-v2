@@ -4,18 +4,19 @@ defmodule Upload.Accounts do
   alias Upload.Accounts.User
 
   def get_user!(id), do: Repo.get!(User, id)
-  
+
   def get_user(id), do: Repo.get(User, id)
 
   def find_or_create_user(auth) do
     uid = to_string(auth.uid)
     provider = to_string(auth.provider)
-    
+
     query = from u in User, where: u.provider == ^provider and u.uid == ^uid
-    
+
     case Repo.one(query) do
       nil ->
         create_user(auth)
+
       user ->
         {:ok, user}
     end
@@ -26,7 +27,7 @@ defmodule Upload.Accounts do
       provider: to_string(auth.provider),
       uid: to_string(auth.uid),
       email: auth.info.email,
-      name: auth.info.name || auth.info.nickname,
+      name: Map.get(auth.info, :name) || Map.get(auth.info, :nickname),
       avatar_url: auth.info.image,
       role: "user"
     }
@@ -34,5 +35,23 @@ defmodule Upload.Accounts do
     %User{}
     |> User.changeset(user_params)
     |> Repo.insert()
+  end
+
+  @doc """
+  Lists all users with their sites preloaded.
+  """
+  def list_users do
+    User
+    |> preload(:sites)
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets a user with their sites preloaded.
+  """
+  def get_user_with_sites!(id) do
+    User
+    |> Repo.get!(id)
+    |> Repo.preload(:sites)
   end
 end

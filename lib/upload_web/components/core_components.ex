@@ -82,38 +82,271 @@ defmodule UploadWeb.CoreComponents do
   @doc """
   Renders a button with navigation support.
 
+  ## Variants
+
+  - `primary` - Default indigo button for main actions
+  - `success` - Green button for save/confirm actions
+  - `secondary` - Gray button for cancel/secondary actions
+  - `danger` - Red button for destructive actions
+  - `ghost` - Subtle button with transparent background
+
+  ## Sizes
+
+  - `default` - Standard padding (px-4 py-2)
+  - `sm` - Compact padding (px-3 py-1, smaller text)
+
   ## Examples
 
       <.button>Send!</.button>
-      <.button phx-click="go" variant="primary">Send!</.button>
+      <.button variant="primary">Primary Action</.button>
+      <.button variant="success" type="submit">Save</.button>
+      <.button variant="danger" size="sm">Delete</.button>
+      <.button variant="ghost" size="sm">Edit</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
-  attr :rest, :global, include: ~w(href navigate patch method download name value disabled)
-  attr :class, :any
-  attr :variant, :string, values: ~w(primary)
+  attr :type, :string, default: "button"
+  attr :class, :any, default: nil
+  attr :variant, :string, values: ~w(primary success secondary danger ghost), default: "primary"
+  attr :size, :string, values: ~w(default sm), default: "default"
+
+  attr :rest, :global,
+    include:
+      ~w(href navigate patch method download name value disabled form data-confirm phx-click phx-value-*)
+
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
+    base_classes =
+      "inline-flex items-center justify-center rounded font-medium transition-colors disabled:opacity-50"
+
+    size_classes = %{
+      "default" => "px-4 py-2",
+      "sm" => "px-3 py-1 text-sm"
+    }
+
+    variant_classes = %{
+      "primary" =>
+        "bg-indigo-600 dark:bg-indigo-700 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600",
+      "success" =>
+        "bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600",
+      "secondary" =>
+        "bg-gray-400 dark:bg-gray-600 text-white hover:bg-gray-500 dark:hover:bg-gray-500",
+      "danger" => "bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-600",
+      "ghost" =>
+        "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+    }
 
     assigns =
-      assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
-      end)
+      assign(assigns, :computed_class, [
+        base_classes,
+        Map.fetch!(size_classes, assigns.size),
+        Map.fetch!(variant_classes, assigns.variant),
+        assigns.class
+      ])
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={@class} {@rest}>
+      <.link class={@computed_class} {@rest}>
         {render_slot(@inner_block)}
       </.link>
       """
     else
       ~H"""
-      <button class={@class} {@rest}>
+      <button type={@type} class={@computed_class} {@rest}>
         {render_slot(@inner_block)}
       </button>
       """
     end
+  end
+
+  @doc """
+  Renders a card container with consistent styling.
+
+  ## Variants
+
+  - `default` - Gray background for general content
+  - `indigo` - Indigo-tinted background for highlighted content
+  - `white` - White/dark gray background for standard containers
+  - `bordered` - White background with visible border
+
+  ## Examples
+
+      <.card>Simple content</.card>
+      <.card variant="indigo" hover>Hoverable indigo card</.card>
+      <.card variant="white" class="p-8">
+        <:header>Card Title</:header>
+        Body content here
+      </.card>
+  """
+  attr :id, :string, default: nil
+  attr :variant, :string, values: ~w(default indigo white bordered), default: "default"
+  attr :hover, :boolean, default: false
+  attr :class, :any, default: nil
+  attr :rest, :global
+
+  slot :header
+  slot :inner_block, required: true
+  slot :footer
+
+  def card(assigns) do
+    variant_classes = %{
+      "default" => "bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700",
+      "indigo" =>
+        "bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800",
+      "white" =>
+        "bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 shadow dark:shadow-gray-900/50",
+      "bordered" => "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+    }
+
+    hover_classes =
+      if assigns.hover do
+        case assigns.variant do
+          "indigo" -> "hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+          _ -> "hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+        end
+      else
+        nil
+      end
+
+    assigns =
+      assign(assigns, :computed_class, [
+        "rounded-lg p-6",
+        Map.fetch!(variant_classes, assigns.variant),
+        hover_classes,
+        assigns.class
+      ])
+
+    ~H"""
+    <div id={@id} class={@computed_class} {@rest}>
+      <div :if={@header != []} class="mb-4">
+        {render_slot(@header)}
+      </div>
+      {render_slot(@inner_block)}
+      <div :if={@footer != []} class="mt-4">
+        {render_slot(@footer)}
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a back navigation link with a left arrow icon.
+
+  ## Examples
+
+      <.back_link navigate={~p"/dashboard"}>Back to Dashboard</.back_link>
+  """
+  attr :navigate, :string, required: true
+  attr :class, :any, default: nil
+  slot :inner_block, required: true
+
+  def back_link(assigns) do
+    ~H"""
+    <.link
+      navigate={@navigate}
+      class={[
+        "inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200",
+        @class
+      ]}
+    >
+      <.icon name="hero-arrow-left" class="w-4 h-4" />
+      {render_slot(@inner_block)}
+    </.link>
+    """
+  end
+
+  @doc """
+  Renders an empty state message with optional icon.
+
+  ## Examples
+
+      <.empty_state>No items found</.empty_state>
+      <.empty_state icon="hero-inbox">No messages yet</.empty_state>
+  """
+  attr :icon, :string, default: nil
+  attr :class, :any, default: nil
+  slot :inner_block, required: true
+
+  def empty_state(assigns) do
+    ~H"""
+    <div class={[
+      "bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6",
+      @class
+    ]}>
+      <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+        <.icon :if={@icon} name={@icon} class="w-6 h-6 shrink-0" />
+        <p>{render_slot(@inner_block)}</p>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a user avatar image with consistent styling.
+
+  ## Sizes
+
+  - `xs` - 2rem (32px)
+  - `sm` - 2rem (32px)
+  - `md` - 3rem (48px)
+  - `lg` - 4rem (64px)
+
+  ## Examples
+
+      <.user_avatar user={@current_user} />
+      <.user_avatar user={@user} size="lg" />
+  """
+  attr :user, :map, required: true
+  attr :size, :string, values: ~w(xs sm md lg), default: "md"
+  attr :class, :any, default: nil
+
+  def user_avatar(assigns) do
+    size_classes = %{
+      "xs" => "w-6 h-6",
+      "sm" => "w-8 h-8",
+      "md" => "w-12 h-12",
+      "lg" => "w-16 h-16"
+    }
+
+    assigns = assign(assigns, :size_class, Map.fetch!(size_classes, assigns.size))
+
+    ~H"""
+    <img
+      :if={@user.avatar_url}
+      src={@user.avatar_url}
+      alt={@user.name}
+      class={[
+        "rounded-full ring-2 ring-gray-200 dark:ring-gray-700",
+        @size_class,
+        @class
+      ]}
+    />
+    """
+  end
+
+  @doc """
+  Renders a user profile display with avatar and info.
+
+  ## Examples
+
+      <.user_profile user={@current_user} />
+      <.user_profile user={@user} show_email />
+  """
+  attr :user, :map, required: true
+  attr :show_email, :boolean, default: true
+  attr :avatar_size, :string, values: ~w(xs sm md lg), default: "lg"
+  attr :class, :any, default: nil
+
+  def user_profile(assigns) do
+    ~H"""
+    <div class={["flex items-center gap-3", @class]}>
+      <.user_avatar user={@user} size={@avatar_size} />
+      <div>
+        <p class="font-semibold text-gray-900 dark:text-gray-100">{@user.name}</p>
+        <p :if={@show_email} class="text-sm text-gray-600 dark:text-gray-400">{@user.email}</p>
+      </div>
+    </div>
+    """
   end
 
   @doc """
