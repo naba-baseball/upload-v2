@@ -19,8 +19,14 @@ Quick Start:
 All documentation is ready:
 - docs/FLY_IO_DEPLOYMENT_PLAN.md (comprehensive guide)
 - .github/ISSUE_TEMPLATE/flyio-deployment.md (issue template)
+- .github/agents/deployment-expert.md (AI agent for deployment help)
+- .github/agents/QUICK_REFERENCE.md (quick reference cheat sheet)
 - scripts/create_deployment_issue.sh (automation script)
 - CREATE_ISSUE_INSTRUCTIONS.md (detailed instructions)
+
+🤖 AI-Assisted Deployment:
+Use the deployment-expert agent for Fly.io deployment questions!
+See: .github/agents/deployment-expert.md
 
 Branch: claude/plan-flyio-deployment-ka3HK
 Status: Ready for deployment planning
