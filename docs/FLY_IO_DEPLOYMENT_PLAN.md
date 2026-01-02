@@ -4,6 +4,37 @@
 
 This document outlines a comprehensive, security-focused deployment strategy for the Upload Portal application to Fly.io. The plan covers infrastructure setup, security hardening, operational procedures, and monitoring.
 
+## 🤖 AI-Assisted Deployment
+
+### Deployment Expert Agent
+
+For deployment-related questions and tasks, this project includes a **deployment-expert agent** configuration with specialized knowledge of Fly.io and Elixir/Phoenix deployments.
+
+**Configuration**: `.github/agents/deployment-expert.md`
+
+**When to Use**:
+- Troubleshooting deployment issues
+- Clarifying configuration options
+- Understanding Fly.io or Phoenix features
+- Implementing security best practices
+- Optimizing performance
+
+**Knowledge Sources**:
+The agent references official documentation including:
+- Fly.io Elixir guides and API references
+- Phoenix deployment and security guides
+- Ecto production configuration
+- Docker best practices for Elixir applications
+
+**Example Questions**:
+- "How do I configure SSL for the PostgreSQL connection?"
+- "What's the best approach for database migrations in production?"
+- "How do I set up proper health checks?"
+- "What security headers should I configure?"
+- "How do I debug a failed deployment?"
+
+This AI-assisted approach ensures you have access to up-to-date, authoritative information throughout the deployment process.
+
 ## Application Overview
 
 - **Technology Stack**: Phoenix 1.8.3, Elixir ~> 1.15, PostgreSQL

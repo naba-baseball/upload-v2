@@ -15,6 +15,32 @@ This issue tracks the deployment of the Upload Portal application to Fly.io with
 A comprehensive deployment plan has been created and committed to the repository:
 **[docs/FLY_IO_DEPLOYMENT_PLAN.md](../../docs/FLY_IO_DEPLOYMENT_PLAN.md)**
 
+## 🤖 Deployment Expert Agent
+
+For deployment-related questions and tasks, use the **deployment-expert agent** which has specialized knowledge of Fly.io and Elixir/Phoenix deployments.
+
+**Agent Configuration**: [.github/agents/deployment-expert.md](../../.github/agents/deployment-expert.md)
+
+**How to Use**:
+When working on deployment tasks, invoke an AI assistant with the deployment-expert context to:
+- Get answers from official Fly.io and Phoenix documentation
+- Troubleshoot deployment issues
+- Configure infrastructure components
+- Implement security best practices
+- Optimize deployment configurations
+
+The agent references authoritative sources including:
+- [Fly.io Elixir Documentation](https://fly.io/docs/elixir/)
+- [Phoenix Deployment Guide](https://hexdocs.pm/phoenix/deployment.html)
+- [Fly.io Configuration Reference](https://fly.io/docs/reference/configuration/)
+- Project-specific deployment plan (docs/FLY_IO_DEPLOYMENT_PLAN.md)
+
+**Example Questions**:
+- "How do I configure SSL for PostgreSQL on Fly.io?"
+- "What's the best way to handle database migrations on Fly.io?"
+- "How do I set up health checks for a Phoenix app?"
+- "What security headers should I configure for production?"
+
 ## Executive Summary
 
 The plan covers:
