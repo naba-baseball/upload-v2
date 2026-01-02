@@ -5,6 +5,7 @@ defmodule UploadWeb.DashboardLive do
 
   alias Upload.Accounts
   alias Upload.FileValidator
+  alias Upload.SiteUploader
 
   require Logger
 
@@ -44,18 +45,11 @@ defmodule UploadWeb.DashboardLive do
   @impl true
   def handle_event("save", _params, socket) do
     site = socket.assigns.single_site
+    user_id = socket.assigns.current_user.id
 
     results =
       consume_uploaded_entries(socket, :site_archive, fn %{path: path}, entry ->
-        case FileValidator.validate_gzip(path) do
-          :ok ->
-            dest = Path.join(System.tmp_dir!(), "#{site.subdomain}_#{entry.uuid}.tar.gz")
-            File.cp!(path, dest)
-            {:ok, dest}
-
-          {:error, reason} ->
-            {:error, reason}
-        end
+        SiteUploader.process_upload(path, site, entry.uuid)
       end)
 
     case results do
@@ -64,7 +58,7 @@ defmodule UploadWeb.DashboardLive do
           event: "site.upload.rejected",
           site_id: site.id,
           subdomain: site.subdomain,
-          user_id: socket.assigns.current_user.id,
+          user_id: user_id,
           reason: reason
         )
 
@@ -75,7 +69,7 @@ defmodule UploadWeb.DashboardLive do
           event: "site.upload.created",
           site_id: site.id,
           subdomain: site.subdomain,
-          user_id: socket.assigns.current_user.id,
+          user_id: user_id,
           path: dest
         )
 
