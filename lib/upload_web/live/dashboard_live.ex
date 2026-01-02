@@ -4,6 +4,7 @@ defmodule UploadWeb.DashboardLive do
   import UploadWeb.UploadComponents
 
   alias Upload.Accounts
+  alias Upload.FileValidator
 
   require Logger
 
@@ -44,25 +45,45 @@ defmodule UploadWeb.DashboardLive do
   def handle_event("save", _params, socket) do
     site = socket.assigns.single_site
 
-    [dest] =
+    results =
       consume_uploaded_entries(socket, :site_archive, fn %{path: path}, entry ->
-        dest = Path.join(System.tmp_dir!(), "#{site.subdomain}_#{entry.uuid}.tar.gz")
-        File.cp!(path, dest)
-        {:ok, dest}
+        case FileValidator.validate_gzip(path) do
+          :ok ->
+            dest = Path.join(System.tmp_dir!(), "#{site.subdomain}_#{entry.uuid}.tar.gz")
+            File.cp!(path, dest)
+            {:ok, dest}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
       end)
 
-    Logger.info(
-      event: "site.upload.created",
-      site_id: site.id,
-      subdomain: site.subdomain,
-      user_id: socket.assigns.current_user.id,
-      path: dest
-    )
+    case results do
+      [{:error, reason}] ->
+        Logger.warning(
+          event: "site.upload.rejected",
+          site_id: site.id,
+          subdomain: site.subdomain,
+          user_id: socket.assigns.current_user.id,
+          reason: reason
+        )
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "File uploaded successfully!")
-     |> push_navigate(to: ~p"/dashboard")}
+        {:noreply, put_flash(socket, :error, FileValidator.error_message(reason))}
+
+      [dest] ->
+        Logger.info(
+          event: "site.upload.created",
+          site_id: site.id,
+          subdomain: site.subdomain,
+          user_id: socket.assigns.current_user.id,
+          path: dest
+        )
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "File uploaded successfully!")
+         |> push_navigate(to: ~p"/dashboard")}
+    end
   end
 
   @impl true
@@ -84,9 +105,7 @@ defmodule UploadWeb.DashboardLive do
               Manage sites, users, and uploads
             </p>
           </div>
-          <.button
-            navigate={~p"/admin/sites"}
-          >
+          <.button navigate={~p"/admin/sites"}>
             Go to Admin Panel
           </.button>
         </div>

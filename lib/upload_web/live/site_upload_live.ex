@@ -3,6 +3,7 @@ defmodule UploadWeb.SiteUploadLive do
 
   import UploadWeb.UploadComponents
 
+  alias Upload.FileValidator
   alias Upload.Sites
 
   require Logger
@@ -40,25 +41,45 @@ defmodule UploadWeb.SiteUploadLive do
   def handle_event("save", _params, socket) do
     site = socket.assigns.site
 
-    [dest] =
+    results =
       consume_uploaded_entries(socket, :site_archive, fn %{path: path}, entry ->
-        dest = Path.join(System.tmp_dir!(), "#{site.subdomain}_#{entry.uuid}.tar.gz")
-        File.cp!(path, dest)
-        {:ok, dest}
+        case FileValidator.validate_gzip(path) do
+          :ok ->
+            dest = Path.join(System.tmp_dir!(), "#{site.subdomain}_#{entry.uuid}.tar.gz")
+            File.cp!(path, dest)
+            {:ok, dest}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
       end)
 
-    Logger.info(
-      event: "site.upload.created",
-      site_id: site.id,
-      subdomain: site.subdomain,
-      user_id: socket.assigns.current_user.id,
-      path: dest
-    )
+    case results do
+      [{:error, reason}] ->
+        Logger.warning(
+          event: "site.upload.rejected",
+          site_id: site.id,
+          subdomain: site.subdomain,
+          user_id: socket.assigns.current_user.id,
+          reason: reason
+        )
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "File uploaded successfully!")
-     |> push_navigate(to: ~p"/sites/#{site.id}/upload")}
+        {:noreply, put_flash(socket, :error, FileValidator.error_message(reason))}
+
+      [dest] ->
+        Logger.info(
+          event: "site.upload.created",
+          site_id: site.id,
+          subdomain: site.subdomain,
+          user_id: socket.assigns.current_user.id,
+          path: dest
+        )
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "File uploaded successfully!")
+         |> push_navigate(to: ~p"/sites/#{site.id}/upload")}
+    end
   end
 
   @impl true
