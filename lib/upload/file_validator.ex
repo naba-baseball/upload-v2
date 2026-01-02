@@ -40,10 +40,13 @@ defmodule Upload.FileValidator do
   @doc """
   Returns a human-readable error message for validation errors.
   """
-  @spec error_message(:invalid_gzip_format | :file_read_error) :: String.t()
+  @spec error_message(:invalid_gzip_format | :file_read_error | :file_copy_error) :: String.t()
   def error_message(:invalid_gzip_format),
     do: "File is not a valid gzip archive. Please upload a .tar.gz file."
 
   def error_message(:file_read_error),
     do: "Unable to read uploaded file. Please try again."
+
+  def error_message(:file_copy_error),
+    do: "Unable to save uploaded file. Please try again."
 end

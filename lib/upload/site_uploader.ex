@@ -9,7 +9,8 @@ defmodule Upload.SiteUploader do
   alias Upload.FileValidator
   alias Upload.Sites.Site
 
-  @type upload_result :: {:ok, Path.t()} | {:error, :invalid_gzip_format | :file_read_error}
+  @type upload_result ::
+          {:ok, Path.t()} | {:error, :invalid_gzip_format | :file_read_error | :file_copy_error}
 
   @doc """
   Processes an uploaded file for a site.
@@ -24,8 +25,11 @@ defmodule Upload.SiteUploader do
     case FileValidator.validate_gzip(source_path) do
       :ok ->
         dest = build_destination_path(site, entry_uuid)
-        File.cp!(source_path, dest)
-        {:ok, dest}
+
+        case File.cp(source_path, dest) do
+          :ok -> {:ok, dest}
+          {:error, _reason} -> {:error, :file_copy_error}
+        end
 
       {:error, reason} ->
         {:error, reason}
