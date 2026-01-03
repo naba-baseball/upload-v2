@@ -1,6 +1,7 @@
 defmodule UploadWeb.Admin.SitesLive do
   use UploadWeb, :live_view
   import UploadWeb.AdminComponents
+  import UploadWeb.UploadComponents
 
   alias Upload.Sites
   alias Upload.Sites.Site
@@ -226,9 +227,16 @@ defmodule UploadWeb.Admin.SitesLive do
     ~H"""
     <div class="flex justify-between items-center">
       <div>
-        <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">
-          {@site.name}
-        </h3>
+        <div class="flex items-center gap-3 mb-1">
+          <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">
+            {@site.name}
+          </h3>
+          <.deployment_status
+            status={@site.deployment_status}
+            last_deployed_at={@site.last_deployed_at}
+            error={@site.last_deployment_error}
+          />
+        </div>
         <p class="text-sm text-indigo-600 dark:text-indigo-400 font-mono">
           https://{Upload.Sites.Site.full_domain(@site)}
         </p>

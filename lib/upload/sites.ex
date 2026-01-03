@@ -103,4 +103,51 @@ defmodule Upload.Sites do
     query = from(us in UserSite, where: us.user_id == ^user_id and us.site_id == ^site_id)
     Repo.exists?(query)
   end
+
+  @doc """
+  Updates a site's deployment status.
+  """
+  def update_deployment_status(%Site{} = site, attrs) do
+    site
+    |> Site.deployment_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Marks a site as deploying.
+  """
+  def mark_deploying(%Site{} = site) do
+    update_deployment_status(site, %{
+      deployment_status: "deploying",
+      last_deployment_error: nil
+    })
+  end
+
+  @doc """
+  Marks a site as successfully deployed.
+  """
+  def mark_deployed(%Site{} = site) do
+    update_deployment_status(site, %{
+      deployment_status: "deployed",
+      last_deployed_at: DateTime.utc_now(),
+      last_deployment_error: nil
+    })
+  end
+
+  @doc """
+  Marks a site deployment as failed.
+  """
+  def mark_deployment_failed(%Site{} = site, error) do
+    update_deployment_status(site, %{
+      deployment_status: "failed",
+      last_deployment_error: inspect(error)
+    })
+  end
+
+  @doc """
+  Sets the worker name for a site.
+  """
+  def set_worker_name(%Site{} = site, worker_name) do
+    update_deployment_status(site, %{cloudflare_worker_name: worker_name})
+  end
 end

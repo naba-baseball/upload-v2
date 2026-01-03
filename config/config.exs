@@ -65,6 +65,11 @@ config :ueberauth, Ueberauth,
     discord: {Ueberauth.Strategy.Discord, default_scope: "identify email"}
   ]
 
+# Oban job processing
+config :upload, Oban,
+  repo: Upload.Repo,
+  queues: [deployments: 2]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

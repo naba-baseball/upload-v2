@@ -6,6 +6,7 @@ defmodule UploadWeb.SiteUploadLive do
   alias Upload.FileValidator
   alias Upload.Sites
   alias Upload.SiteUploader
+  alias Upload.Workers.DeploymentWorker
 
   require Logger
 
@@ -69,9 +70,14 @@ defmodule UploadWeb.SiteUploadLive do
           path: dest
         )
 
+        # Queue deployment job
+        %{site_id: site.id, tarball_path: dest}
+        |> DeploymentWorker.new()
+        |> Oban.insert()
+
         {:noreply,
          socket
-         |> put_flash(:info, "File uploaded successfully!")
+         |> put_flash(:info, "Upload received! Deployment in progress...")
          |> push_navigate(to: ~p"/sites/#{site.id}/upload")}
     end
   end
@@ -87,9 +93,16 @@ defmodule UploadWeb.SiteUploadLive do
 
         <.card variant="white">
           <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Upload to {@site.name}
-            </h1>
+            <div class="flex items-center justify-between mb-1">
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Upload to {@site.name}
+              </h1>
+              <.deployment_status
+                status={@site.deployment_status}
+                last_deployed_at={@site.last_deployed_at}
+                error={@site.last_deployment_error}
+              />
+            </div>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
               <.icon name="hero-globe-alt" class="w-4 h-4 inline" />
               {Upload.Sites.Site.full_domain(@site)}
