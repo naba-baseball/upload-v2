@@ -36,15 +36,27 @@ defmodule Upload.Deployer.Cloudflare do
       tarball_path: tarball_path
     )
 
-    with {:ok, extract_dir} <- extract_tarball(tarball_path),
-         {:ok, manifest} <- build_manifest(extract_dir),
+    case extract_tarball(tarball_path) do
+      {:ok, extract_dir} ->
+        result = deploy_from_extracted(site, worker_name, extract_dir)
+        # Always clean up extract_dir, regardless of success or failure
+        cleanup(extract_dir)
+        result
+
+      {:error, reason} = error ->
+        Logger.error(extraction_failed: site.id, reason: reason)
+        error
+    end
+  end
+
+  defp deploy_from_extracted(site, worker_name, extract_dir) do
+    with {:ok, manifest} <- build_manifest(extract_dir),
          {:ok, %{jwt: upload_jwt, buckets: buckets}} <-
            Client.submit_manifest(worker_name, manifest),
          :ok <- upload_assets(extract_dir, manifest, buckets, upload_jwt),
          {:ok, completion_jwt} <- Client.get_completion_jwt(upload_jwt),
          {:ok, _} <- deploy_worker(worker_name, completion_jwt),
-         :ok <- ensure_custom_domain(site, worker_name),
-         :ok <- cleanup(extract_dir) do
+         :ok <- ensure_custom_domain(site, worker_name) do
       Logger.info(deployment_success: site.id, worker_name: worker_name)
       {:ok, site}
     else
@@ -75,8 +87,9 @@ defmodule Upload.Deployer.Cloudflare do
         end
 
       {output, code} ->
-        Logger.error(tar_extraction_failed: tarball_path, exit_code: code, output: output)
-        {:error, {:extraction_failed, output}}
+        reason = inspect(output)
+        Logger.error(tar_extraction_failed: tarball_path, exit_code: code, output: reason)
+        {:error, {:extraction_failed, reason}}
     end
   end
 

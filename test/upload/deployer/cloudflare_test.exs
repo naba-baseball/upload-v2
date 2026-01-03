@@ -2,6 +2,7 @@ defmodule Upload.Deployer.CloudflareTest do
   use ExUnit.Case, async: true
 
   alias Upload.Deployer.Cloudflare
+  alias Upload.Deployer.Cloudflare.Client
 
   setup do
     tmp_dir =
@@ -14,6 +15,138 @@ defmodule Upload.Deployer.CloudflareTest do
     end)
 
     {:ok, tmp_dir: tmp_dir}
+  end
+
+  describe "Client.submit_manifest/2 with missing config" do
+    test "returns error when account_id is not configured" do
+      # Ensure cloudflare config is empty/missing
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, [])
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.submit_manifest("test-worker", %{})
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
+
+    test "returns error when api_token is not configured" do
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, account_id: "test-account")
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.submit_manifest("test-worker", %{})
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
+  end
+
+  describe "Client.upload_assets/2 with missing config" do
+    test "returns error when account_id is not configured" do
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, [])
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.upload_assets([], "fake-jwt")
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
+  end
+
+  describe "Client.get_completion_jwt/1 with missing config" do
+    test "returns error when account_id is not configured" do
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, [])
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.get_completion_jwt("fake-jwt")
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
+  end
+
+  describe "Client.deploy_worker/3 with missing config" do
+    test "returns error when account_id is not configured" do
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, [])
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.deploy_worker("test-worker", "js code", %{})
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
+  end
+
+  describe "Client.create_custom_domain/2 with missing config" do
+    test "returns error when account_id is not configured" do
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, [])
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.create_custom_domain("test-worker", "example.com")
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
+  end
+
+  describe "Client.worker_exists?/1 with missing config" do
+    test "returns error when account_id is not configured" do
+      original_config = Application.get_env(:upload, :cloudflare)
+      Application.put_env(:upload, :cloudflare, [])
+
+      on_exit(fn ->
+        if original_config do
+          Application.put_env(:upload, :cloudflare, original_config)
+        else
+          Application.delete_env(:upload, :cloudflare)
+        end
+      end)
+
+      result = Client.worker_exists?("test-worker")
+
+      assert result == {:error, :missing_cloudflare_config}
+    end
   end
 
   describe "extract_tarball/1" do

@@ -23,6 +23,10 @@ defmodule UploadWeb.DashboardLive do
     socket =
       case user.sites do
         [site] ->
+          if connected?(socket) do
+            Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
+          end
+
           socket
           |> assign(:single_site, site)
           |> allow_upload(:site_archive,
@@ -79,12 +83,32 @@ defmodule UploadWeb.DashboardLive do
         |> DeploymentWorker.new()
         |> Oban.insert()
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Upload received! Deployment in progress...")
-         |> push_navigate(to: ~p"/dashboard")}
+        {:noreply, put_flash(socket, :info, "Upload received! Deployment in progress...")}
     end
   end
+
+  @impl true
+  def handle_info({:deployment_updated, site}, socket) do
+    socket =
+      socket
+      |> assign(:single_site, site)
+      |> update(:sites, fn sites ->
+        Enum.map(sites, fn s -> if s.id == site.id, do: site, else: s end)
+      end)
+      |> maybe_flash_deployment_status(site)
+
+    {:noreply, socket}
+  end
+
+  defp maybe_flash_deployment_status(socket, %{deployment_status: "deployed"}) do
+    put_flash(socket, :info, "Deployment successful!")
+  end
+
+  defp maybe_flash_deployment_status(socket, %{deployment_status: "failed"} = site) do
+    put_flash(socket, :error, site.last_deployment_error)
+  end
+
+  defp maybe_flash_deployment_status(socket, _site), do: socket
 
   @impl true
   def render(assigns) do

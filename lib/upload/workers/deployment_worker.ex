@@ -38,16 +38,41 @@ defmodule Upload.Workers.DeploymentWorker do
         :ok
 
       {:error, reason} ->
-        Sites.mark_deployment_failed(site, reason)
         Logger.error(deployment_worker_failed: site_id, reason: reason)
-        {:error, reason}
+        Task.start(fn -> Sites.mark_deployment_failed(site, reason) end)
+        handle_deployment_error(reason, tarball_path)
     end
   end
 
-  @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
     Logger.error(invalid_deployment_args: args)
     {:error, :invalid_args}
+  end
+
+  # Non-retryable errors - cancel the job and clean up
+  defp handle_deployment_error(:missing_cloudflare_config, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, :missing_cloudflare_config}
+  end
+
+  defp handle_deployment_error(:no_valid_files, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, :no_valid_files}
+  end
+
+  defp handle_deployment_error({:extraction_failed, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
+  defp handle_deployment_error({:path_traversal_detected, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
+  # Retryable errors - let Oban retry
+  defp handle_deployment_error(reason, _tarball_path) do
+    {:error, reason}
   end
 
   defp cleanup_tarball(tarball_path) do

@@ -258,4 +258,115 @@ defmodule UploadWeb.DashboardLiveTest do
       assert has_element?(view, "input[type='file'][required]")
     end
   end
+
+  describe "real-time deployment updates for single site" do
+    setup %{conn: conn} do
+      user = user_fixture()
+      site = site_fixture(%{name: "Solo Site", subdomain: "solosite"})
+      assign_user_to_site(user, site)
+      conn = init_test_session(conn, %{user_id: user.id})
+
+      %{conn: conn, user: user, site: site}
+    end
+
+    test "updates UI when deployment status changes to deployed", %{conn: conn, site: site} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      # Simulate a deployment update via PubSub
+      updated_site = %{site | deployment_status: "deployed", last_deployed_at: DateTime.utc_now()}
+
+      Phoenix.PubSub.broadcast(
+        Upload.PubSub,
+        "site:#{site.id}",
+        {:deployment_updated, updated_site}
+      )
+
+      # Wait for the update to be processed and check the HTML
+      html = render(view)
+      assert html =~ "Deployed"
+    end
+
+    test "updates UI when deployment status changes to failed", %{conn: conn, site: site} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      # Simulate a deployment failure via PubSub
+      updated_site = %{site | deployment_status: "failed", last_deployment_error: "Test error"}
+
+      Phoenix.PubSub.broadcast(
+        Upload.PubSub,
+        "site:#{site.id}",
+        {:deployment_updated, updated_site}
+      )
+
+      # Wait for the update to be processed and check the HTML
+      html = render(view)
+      assert html =~ "Failed"
+    end
+
+    test "updates UI when deployment status changes to deploying", %{conn: conn, site: site} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      # Simulate deployment starting via PubSub
+      updated_site = %{site | deployment_status: "deploying"}
+
+      Phoenix.PubSub.broadcast(
+        Upload.PubSub,
+        "site:#{site.id}",
+        {:deployment_updated, updated_site}
+      )
+
+      # Wait for the update to be processed and check the HTML
+      html = render(view)
+      assert html =~ "Deploying"
+    end
+
+    test "shows success flash when deployment succeeds", %{conn: conn, site: site} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      updated_site = %{site | deployment_status: "deployed", last_deployed_at: DateTime.utc_now()}
+
+      Phoenix.PubSub.broadcast(
+        Upload.PubSub,
+        "site:#{site.id}",
+        {:deployment_updated, updated_site}
+      )
+
+      # Check for success flash
+      assert render(view) =~ "Deployment successful!"
+    end
+
+    test "shows error flash when deployment fails", %{conn: conn, site: site} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      error_message = "Archive contained no valid site files"
+      updated_site = %{site | deployment_status: "failed", last_deployment_error: error_message}
+
+      Phoenix.PubSub.broadcast(
+        Upload.PubSub,
+        "site:#{site.id}",
+        {:deployment_updated, updated_site}
+      )
+
+      # Check for error flash with the error message
+      assert render(view) =~ error_message
+    end
+
+    test "updates both single_site and sites assigns", %{conn: conn, site: site} do
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      # Simulate a deployment update via PubSub
+      updated_site = %{site | deployment_status: "deployed", last_deployed_at: DateTime.utc_now()}
+
+      Phoenix.PubSub.broadcast(
+        Upload.PubSub,
+        "site:#{site.id}",
+        {:deployment_updated, updated_site}
+      )
+
+      # The page should still show the site correctly after update
+      html = render(view)
+      assert html =~ "Solo Site"
+      assert html =~ "Deployed"
+    end
+  end
 end

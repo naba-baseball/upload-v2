@@ -300,4 +300,174 @@ defmodule Upload.SitesTest do
       assert fetched_user.__struct__ == Upload.Accounts.User
     end
   end
+
+  describe "deployment status functions" do
+    test "mark_deploying/1 sets status to deploying and clears error" do
+      site = site_fixture()
+
+      {:ok, updated_site} = Sites.mark_deploying(site)
+
+      assert updated_site.deployment_status == "deploying"
+      assert updated_site.last_deployment_error == nil
+    end
+
+    test "mark_deployed/1 sets status to deployed and updates timestamp" do
+      site = site_fixture()
+
+      {:ok, updated_site} = Sites.mark_deployed(site)
+
+      assert updated_site.deployment_status == "deployed"
+      assert updated_site.last_deployed_at != nil
+      assert updated_site.last_deployment_error == nil
+    end
+
+    test "mark_deployment_failed/2 sets status to failed and stores formatted error" do
+      site = site_fixture()
+
+      {:ok, updated_site} = Sites.mark_deployment_failed(site, :no_valid_files)
+
+      assert updated_site.deployment_status == "failed"
+      assert updated_site.last_deployment_error =~ "no valid site files"
+    end
+
+    test "mark_deploying/1 broadcasts via PubSub" do
+      site = site_fixture()
+      Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
+
+      {:ok, updated_site} = Sites.mark_deploying(site)
+
+      assert_receive {:deployment_updated, ^updated_site}
+    end
+
+    test "mark_deployed/1 broadcasts via PubSub" do
+      site = site_fixture()
+      Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
+
+      {:ok, updated_site} = Sites.mark_deployed(site)
+
+      assert_receive {:deployment_updated, ^updated_site}
+    end
+
+    test "mark_deployment_failed/2 broadcasts via PubSub" do
+      site = site_fixture()
+      Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
+
+      {:ok, updated_site} = Sites.mark_deployment_failed(site, :some_error)
+
+      assert_receive {:deployment_updated, ^updated_site}
+    end
+  end
+
+  describe "format_deployment_error/1" do
+    test "formats extraction_failed with string output" do
+      error = {:extraction_failed, "tar: invalid archive\n"}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result == "Failed to extract archive: tar: invalid archive"
+    end
+
+    test "formats extraction_failed with non-string reason" do
+      error = {:extraction_failed, :enoent}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result == "Failed to extract archive: :enoent"
+    end
+
+    test "formats missing_cloudflare_config" do
+      result = Sites.format_deployment_error(:missing_cloudflare_config)
+
+      assert result =~ "not configured"
+      assert result =~ "administrator"
+    end
+
+    test "formats api_error with 401 status" do
+      error = {:api_error, 401, %{"error" => "Unauthorized"}}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Authentication failed"
+      assert result =~ "administrator"
+    end
+
+    test "formats api_error with 403 status" do
+      error = {:api_error, 403, %{"error" => "Forbidden"}}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Permission denied"
+    end
+
+    test "formats api_error with 5xx status" do
+      error = {:api_error, 503, %{"error" => "Service Unavailable"}}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "temporarily unavailable"
+      assert result =~ "503"
+      assert result =~ "retry"
+    end
+
+    test "formats api_error with other status and extracts message from errors array" do
+      error = {:api_error, 400, %{"errors" => [%{"message" => "Invalid request"}]}}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "400"
+      assert result =~ "Invalid request"
+    end
+
+    test "formats api_error with other status and extracts message from error key" do
+      error = {:api_error, 422, %{"error" => "Validation failed"}}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "422"
+      assert result =~ "Validation failed"
+    end
+
+    test "formats request_failed with reason map" do
+      error = {:request_failed, %{reason: :timeout}}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Network error"
+      assert result =~ "timeout"
+    end
+
+    test "formats request_failed with other reason" do
+      error = {:request_failed, :econnrefused}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Network error"
+      assert result =~ "econnrefused"
+    end
+
+    test "formats no_valid_files" do
+      result = Sites.format_deployment_error(:no_valid_files)
+
+      assert result =~ "no valid site files"
+      assert result =~ "HTML"
+    end
+
+    test "formats path_traversal_detected" do
+      error = {:path_traversal_detected, "/tmp/extract/../../../etc/passwd"}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Invalid archive"
+      assert result =~ "unsafe file paths"
+    end
+
+    test "formats unknown errors with inspect" do
+      error = {:unknown_error, :something_weird}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Deployment failed"
+      assert result =~ "unknown_error"
+    end
+  end
 end
