@@ -16,6 +16,7 @@ defmodule Upload.Deployer.Cloudflare do
   require Logger
 
   alias Upload.Deployer.Cloudflare.{Client, Manifest, WorkerTemplate}
+  alias Upload.Deployer.TarExtractor
   alias Upload.Sites.Site
 
   @batch_size 100
@@ -69,27 +70,25 @@ defmodule Upload.Deployer.Cloudflare do
   @doc """
   Extracts a tarball to a temporary directory.
 
+  Uses a pure Elixir tar extractor that handles Latin-1 encoded filenames
+  by converting them to UTF-8.
+
   Returns `{:ok, extract_dir}` or `{:error, reason}`.
   """
   def extract_tarball(tarball_path) do
     extract_dir = Path.join(System.tmp_dir!(), "extract_#{:erlang.unique_integer([:positive])}")
     File.mkdir_p!(extract_dir)
 
-    case System.cmd("tar", ["-xzf", tarball_path, "-C", extract_dir],
-           stderr_to_stdout: true,
-           env: [{"LC_ALL", "en_US.UTF-8"}, {"LANG", "en_US.UTF-8"}]
-         ) do
-      {_, 0} ->
-        # Validate no path traversal in extracted files
+    case TarExtractor.extract(tarball_path, extract_dir) do
+      {:ok, _} ->
+        # Validate no path traversal in extracted files (double-check)
         case validate_extracted_paths(extract_dir) do
           :ok -> {:ok, extract_dir}
           {:error, _} = error -> error
         end
 
-      {output, code} ->
-        reason = inspect(output)
-        Logger.error(tar_extraction_failed: tarball_path, exit_code: code, output: reason)
-        {:error, {:extraction_failed, reason}}
+      {:error, _} = error ->
+        error
     end
   end
 
