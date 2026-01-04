@@ -102,28 +102,29 @@ defmodule UploadWeb.UploadComponents do
 
   def deployment_status(assigns) do
     ~H"""
-    <div class="flex items-center gap-2">
-      <span class={[
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
-        status_classes(@status)
-      ]}>
-        <span class={["w-2 h-2 rounded-full", status_dot_classes(@status)]}></span>
-        {status_label(@status)}
-      </span>
-
-      <%= if @status == "deployed" && @last_deployed_at do %>
-        <span class="text-xs text-gray-500 dark:text-gray-400">
-          {format_time(@last_deployed_at)}
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2">
+        <span class={[
+          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
+          status_classes(@status)
+        ]}>
+          <span class={["w-2 h-2 rounded-full", status_dot_classes(@status)]}></span>
+          {status_label(@status)}
         </span>
-      <% end %>
+
+        <%= if @status == "deployed" && @last_deployed_at do %>
+          <span class="text-xs text-gray-500 dark:text-gray-400">
+            {format_time(@last_deployed_at)}
+          </span>
+        <% end %>
+      </div>
 
       <%= if @status == "failed" && @error do %>
-        <span
-          class="text-xs text-red-600 dark:text-red-400 truncate max-w-[200px]"
-          title={@error}
-        >
-          {@error}
-        </span>
+        <div class="mt-1 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+          <p class="text-xs text-red-700 dark:text-red-300 break-words whitespace-pre-wrap">
+            {@error}
+          </p>
+        </div>
       <% end %>
     </div>
     """
