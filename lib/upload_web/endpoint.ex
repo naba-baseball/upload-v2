@@ -8,7 +8,8 @@ defmodule UploadWeb.Endpoint do
     store: :cookie,
     key: "_upload_key",
     signing_salt: "LAKcQEFT",
-    same_site: "Lax"
+    same_site: "Lax",
+    max_age: 60 * 24 * 60 * 60
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
