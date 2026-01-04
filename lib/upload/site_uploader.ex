@@ -6,6 +6,8 @@ defmodule Upload.SiteUploader do
   to ensure consistent security checks across all upload entry points.
   """
 
+  require Logger
+
   alias Upload.FileValidator
   alias Upload.Sites.Site
 
@@ -27,8 +29,20 @@ defmodule Upload.SiteUploader do
         dest = build_destination_path(site, entry_uuid)
 
         case File.cp(source_path, dest) do
-          :ok -> {:ok, dest}
-          {:error, _reason} -> {:error, :file_copy_error}
+          :ok ->
+            {:ok, dest}
+
+          {:error, reason} ->
+            Logger.warning(
+              event: "site.upload.file_copy_failed",
+              site_id: site.id,
+              subdomain: site.subdomain,
+              source_path: source_path,
+              dest_path: dest,
+              reason: reason
+            )
+
+            {:error, :file_copy_error}
         end
 
       {:error, reason} ->
