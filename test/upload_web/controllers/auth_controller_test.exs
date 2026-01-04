@@ -81,4 +81,24 @@ defmodule UploadWeb.AuthControllerTest do
       assert conn.private.plug_session_info == :drop
     end
   end
+
+  describe "session persistence" do
+    test "session cookie has max_age set to persist across browser sessions", %{conn: conn} do
+      conn =
+        conn
+        |> assign(:ueberauth_auth, @ueberauth_auth)
+        |> get(~p"/auth/discord/callback")
+
+      # Get the session cookie
+      session_cookie = conn.resp_cookies["_upload_key"]
+
+      # Verify the cookie exists
+      assert session_cookie, "Session cookie should be set"
+
+      # Verify max_age is set to 60 days (in seconds)
+      expected_max_age = 60 * 24 * 60 * 60
+      assert session_cookie.max_age == expected_max_age,
+             "Session cookie should have max_age of #{expected_max_age} seconds (60 days), got #{session_cookie.max_age}"
+    end
+  end
 end
