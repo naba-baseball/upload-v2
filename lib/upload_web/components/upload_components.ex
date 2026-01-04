@@ -86,4 +86,78 @@ defmodule UploadWeb.UploadComponents do
   defp error_to_string(:too_large), do: "File is too large (max 500MB)"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
   defp error_to_string(:not_accepted), do: "Only .tar.gz files are accepted"
+
+  @doc """
+  Renders a deployment status badge.
+
+  ## Examples
+
+      <.deployment_status status="deployed" />
+      <.deployment_status status="deploying" />
+      <.deployment_status status="failed" error="Connection timeout" />
+  """
+  attr :status, :string, required: true, doc: "The deployment status"
+  attr :last_deployed_at, :any, default: nil, doc: "DateTime of last successful deployment"
+  attr :error, :string, default: nil, doc: "Error message for failed deployments"
+
+  def deployment_status(assigns) do
+    ~H"""
+    <div class="flex items-center gap-2">
+      <span class={[
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
+        status_classes(@status)
+      ]}>
+        <span class={["w-2 h-2 rounded-full", status_dot_classes(@status)]}></span>
+        {status_label(@status)}
+      </span>
+
+      <%= if @status == "deployed" && @last_deployed_at do %>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          {format_time(@last_deployed_at)}
+        </span>
+      <% end %>
+
+      <%= if @status == "failed" && @error do %>
+        <span
+          class="text-xs text-red-600 dark:text-red-400 truncate max-w-[200px]"
+          title={@error}
+        >
+          {@error}
+        </span>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp status_classes("pending"),
+    do: "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+
+  defp status_classes("deploying"),
+    do: "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
+
+  defp status_classes("deployed"),
+    do: "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
+
+  defp status_classes("failed"),
+    do: "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200"
+
+  defp status_classes(_), do: "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+
+  defp status_dot_classes("pending"), do: "bg-gray-400 dark:bg-gray-500"
+  defp status_dot_classes("deploying"), do: "bg-blue-500 animate-pulse"
+  defp status_dot_classes("deployed"), do: "bg-green-500"
+  defp status_dot_classes("failed"), do: "bg-red-500"
+  defp status_dot_classes(_), do: "bg-gray-400 dark:bg-gray-500"
+
+  defp status_label("pending"), do: "Pending"
+  defp status_label("deploying"), do: "Deploying"
+  defp status_label("deployed"), do: "Deployed"
+  defp status_label("failed"), do: "Failed"
+  defp status_label(status), do: status
+
+  defp format_time(nil), do: ""
+
+  defp format_time(datetime) do
+    Calendar.strftime(datetime, "%b %d, %H:%M")
+  end
 end

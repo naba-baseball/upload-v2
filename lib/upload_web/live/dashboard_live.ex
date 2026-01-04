@@ -6,6 +6,7 @@ defmodule UploadWeb.DashboardLive do
   alias Upload.Accounts
   alias Upload.FileValidator
   alias Upload.SiteUploader
+  alias Upload.Workers.DeploymentWorker
 
   require Logger
 
@@ -22,6 +23,10 @@ defmodule UploadWeb.DashboardLive do
     socket =
       case user.sites do
         [site] ->
+          if connected?(socket) do
+            Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
+          end
+
           socket
           |> assign(:single_site, site)
           |> allow_upload(:site_archive,
@@ -73,12 +78,37 @@ defmodule UploadWeb.DashboardLive do
           path: dest
         )
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "File uploaded successfully!")
-         |> push_navigate(to: ~p"/dashboard")}
+        # Queue deployment job
+        %{site_id: site.id, tarball_path: dest}
+        |> DeploymentWorker.new()
+        |> Oban.insert()
+
+        {:noreply, put_flash(socket, :info, "Upload received! Deployment in progress...")}
     end
   end
+
+  @impl true
+  def handle_info({:deployment_updated, site}, socket) do
+    socket =
+      socket
+      |> assign(:single_site, site)
+      |> update(:sites, fn sites ->
+        Enum.map(sites, fn s -> if s.id == site.id, do: site, else: s end)
+      end)
+      |> maybe_flash_deployment_status(site)
+
+    {:noreply, socket}
+  end
+
+  defp maybe_flash_deployment_status(socket, %{deployment_status: "deployed"}) do
+    put_flash(socket, :info, "Deployment successful!")
+  end
+
+  defp maybe_flash_deployment_status(socket, %{deployment_status: "failed"} = site) do
+    put_flash(socket, :error, site.last_deployment_error)
+  end
+
+  defp maybe_flash_deployment_status(socket, _site), do: socket
 
   @impl true
   def render(assigns) do
@@ -109,9 +139,16 @@ defmodule UploadWeb.DashboardLive do
         <%= if @single_site do %>
           <%!-- Single site: show upload form inline --%>
           <div class="mb-6">
-            <h2 class="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
-              {@single_site.name}
-            </h2>
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                {@single_site.name}
+              </h2>
+              <.deployment_status
+                status={@single_site.deployment_status}
+                last_deployed_at={@single_site.last_deployed_at}
+                error={@single_site.last_deployment_error}
+              />
+            </div>
             <a
               href={"https://#{Upload.Sites.Site.full_domain(@single_site)}"}
               target="_blank"
@@ -140,9 +177,15 @@ defmodule UploadWeb.DashboardLive do
           <%= if @sites != [] do %>
             <div class="grid gap-4 sm:grid-cols-2">
               <.card :for={site <- @sites} variant="indigo" hover class="p-6">
-                <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-                  {site.name}
-                </h3>
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {site.name}
+                  </h3>
+                  <.deployment_status
+                    status={site.deployment_status}
+                    last_deployed_at={site.last_deployed_at}
+                  />
+                </div>
                 <div class="flex flex-col gap-2">
                   <a
                     href={"https://#{Upload.Sites.Site.full_domain(site)}"}

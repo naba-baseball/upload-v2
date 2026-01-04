@@ -103,4 +103,124 @@ defmodule Upload.Sites do
     query = from(us in UserSite, where: us.user_id == ^user_id and us.site_id == ^site_id)
     Repo.exists?(query)
   end
+
+  @doc """
+  Updates a site's deployment status.
+  """
+  def update_deployment_status(%Site{} = site, attrs) do
+    site
+    |> Site.deployment_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Marks a site as deploying.
+  """
+  def mark_deploying(%Site{} = site) do
+    site
+    |> update_deployment_status(%{
+      deployment_status: "deploying",
+      last_deployment_error: nil
+    })
+    |> broadcast_deployment_update()
+  end
+
+  @doc """
+  Marks a site as successfully deployed.
+  """
+  def mark_deployed(%Site{} = site) do
+    site
+    |> update_deployment_status(%{
+      deployment_status: "deployed",
+      last_deployed_at: DateTime.utc_now(),
+      last_deployment_error: nil
+    })
+    |> broadcast_deployment_update()
+  end
+
+  @doc """
+  Marks a site deployment as failed.
+  """
+  def mark_deployment_failed(%Site{} = site, error) do
+    site
+    |> update_deployment_status(%{
+      deployment_status: "failed",
+      last_deployment_error: format_deployment_error(error)
+    })
+    |> broadcast_deployment_update()
+  end
+
+  # Broadcasts deployment status updates via PubSub
+  defp broadcast_deployment_update({:ok, %Site{} = site}) do
+    Phoenix.PubSub.broadcast(Upload.PubSub, "site:#{site.id}", {:deployment_updated, site})
+    {:ok, site}
+  end
+
+  defp broadcast_deployment_update(error), do: error
+
+  @doc """
+  Formats a deployment error into a user-friendly message.
+  """
+  def format_deployment_error({:extraction_failed, output}) when is_binary(output) do
+    "Failed to extract archive: #{String.trim(output)}"
+  end
+
+  def format_deployment_error({:extraction_failed, _reason}) do
+    "Failed to extract archive: unknown error"
+  end
+
+  def format_deployment_error(:missing_cloudflare_config) do
+    "Deployment service is not configured. Please contact an administrator."
+  end
+
+  def format_deployment_error({:api_error, 401, _}) do
+    "Authentication failed with deployment service. Please contact an administrator."
+  end
+
+  def format_deployment_error({:api_error, 403, _}) do
+    "Permission denied by deployment service. Please contact an administrator."
+  end
+
+  def format_deployment_error({:api_error, status, _}) when status >= 500 do
+    "Deployment service temporarily unavailable (#{status}). Will retry automatically."
+  end
+
+  def format_deployment_error({:api_error, status, body}) do
+    message = extract_api_error_message(body)
+    "Deployment failed (#{status}): #{message}"
+  end
+
+  def format_deployment_error({:request_failed, %{reason: reason}}) do
+    "Network error during deployment: #{inspect(reason)}"
+  end
+
+  def format_deployment_error({:request_failed, reason}) do
+    "Network error during deployment: #{inspect(reason)}"
+  end
+
+  def format_deployment_error(:no_valid_files) do
+    "Archive contained no valid site files (HTML, CSS, JS, images, etc.)"
+  end
+
+  def format_deployment_error({:path_traversal_detected, _path}) do
+    "Invalid archive: contains unsafe file paths"
+  end
+
+  def format_deployment_error(_error) do
+    "Deployment failed: unknown error"
+  end
+  def format_deployment_error() do
+    "Deployment failed: unknown error"
+  end
+
+  defp extract_api_error_message(%{"errors" => [%{"message" => message} | _]}), do: message
+  defp extract_api_error_message(%{"error" => message}) when is_binary(message), do: message
+  defp extract_api_error_message(body), do: inspect(body)
+
+  @doc """
+  Sets the worker name for a site.
+  """
+  def set_worker_name(%Site{} = site, worker_name) do
+    update_deployment_status(site, %{cloudflare_worker_name: worker_name})
+  end
 end

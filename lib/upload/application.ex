@@ -12,8 +12,7 @@ defmodule Upload.Application do
       Upload.Repo,
       {DNSCluster, query: Application.get_env(:upload, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Upload.PubSub},
-      # Start a worker by calling: Upload.Worker.start_link(arg)
-      # {Upload.Worker, arg},
+      {Oban, Application.fetch_env!(:upload, Oban)},
       # Start to serve requests, typically the last entry
       UploadWeb.Endpoint
     ]

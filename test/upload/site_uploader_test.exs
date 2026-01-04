@@ -40,7 +40,10 @@ defmodule Upload.SiteUploaderTest do
       File.rm(dest)
     end
 
-    test "returns {:error, :invalid_gzip_format} for invalid file", %{tmp_dir: tmp_dir, site: site} do
+    test "returns {:error, :invalid_gzip_format} for invalid file", %{
+      tmp_dir: tmp_dir,
+      site: site
+    } do
       source = Path.join(tmp_dir, "invalid.tar.gz")
       File.write!(source, @invalid_content)
 
