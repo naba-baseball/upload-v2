@@ -111,17 +111,17 @@ defmodule Upload.Workers.DeploymentWorkerTest do
   end
 
   describe "perform/1 with extraction errors" do
-    test "returns {:cancel, {:extraction_failed, _}} for invalid tarball" do
+    test "returns {:cancel, {:file_stat_failed, _}} for non-existent tarball" do
       site = site_fixture()
 
       job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => "/nonexistent/file.tar.gz"}}
 
       result = DeploymentWorker.perform(job)
 
-      assert {:cancel, {:extraction_failed, _output}} = result
+      assert {:cancel, {:file_stat_failed, :enoent}} = result
     end
 
-    test "marks site as failed with extraction error message" do
+    test "marks site as failed with file read error message" do
       site = site_fixture()
 
       job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => "/nonexistent/file.tar.gz"}}
@@ -130,7 +130,7 @@ defmodule Upload.Workers.DeploymentWorkerTest do
 
       updated_site = Sites.get_site!(site.id)
       assert updated_site.deployment_status == "failed"
-      assert updated_site.last_deployment_error =~ "Failed to extract"
+      assert updated_site.last_deployment_error =~ "Failed to read archive file"
     end
   end
 

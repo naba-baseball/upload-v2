@@ -9,6 +9,7 @@ defmodule UploadWeb.Endpoint do
     key: "_upload_key",
     signing_salt: "LAKcQEFT",
     same_site: "Lax",
+    # 60 days in seconds
     max_age: 60 * 24 * 60 * 60
   ]
 

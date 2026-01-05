@@ -188,7 +188,7 @@ defmodule Upload.Deployer.TarExtractorTest do
   end
 
   # Manually create a tar.gz with Latin-1 encoded filename
-  defp manually_create_latin1_tar(tmp_dir, output_path) do
+  defp manually_create_latin1_tar(_tmp_dir, output_path) do
     # Create a minimal tar archive with a file that has a Latin-1 encoded name
     # "córdoba_archers.png" with ó as Latin-1 byte 0xF3
 
@@ -197,7 +197,8 @@ defmodule Upload.Deployer.TarExtractorTest do
 
     # Build tar header (512 bytes)
     # Filename with Latin-1 encoding: "c\xF3rdoba_archers.png"
-    latin1_filename = <<99, 0xF3, 114, 100, 111, 98, 97, 95, 97, 114, 99, 104, 101, 114, 115, 46, 112, 110, 103>>
+    latin1_filename =
+      <<99, 0xF3, 114, 100, 111, 98, 97, 95, 97, 114, 99, 104, 101, 114, 115, 46, 112, 110, 103>>
 
     # Pad filename to 100 bytes with nulls
     filename_field = String.pad_trailing(latin1_filename, 100, <<0>>)
@@ -240,6 +241,9 @@ defmodule Upload.Deployer.TarExtractorTest do
     # Prefix (empty, 155 bytes)
     prefix_field = String.duplicate(<<0>>, 155)
 
+    # Padding to reach 512 bytes (12 bytes needed after prefix)
+    padding_field = String.duplicate(<<0>>, 12)
+
     # Build header without checksum
     header_without_checksum =
       filename_field <>
@@ -257,7 +261,8 @@ defmodule Upload.Deployer.TarExtractorTest do
         group_field <>
         devmajor_field <>
         devminor_field <>
-        prefix_field
+        prefix_field <>
+        padding_field
 
     # Calculate checksum (sum of all bytes, treating checksum field as spaces)
     checksum =
@@ -268,7 +273,7 @@ defmodule Upload.Deployer.TarExtractorTest do
     # Format checksum as 6-digit octal + null + space
     checksum_str = String.pad_leading(Integer.to_string(checksum, 8), 6, "0") <> <<0, 32>>
 
-    # Build final header with checksum
+    # Build final header with checksum (replace bytes 148-155 with checksum)
     header =
       binary_part(header_without_checksum, 0, 148) <>
         checksum_str <>
@@ -325,6 +330,8 @@ defmodule Upload.Deployer.TarExtractorTest do
     devmajor_field = String.duplicate(<<0>>, 8)
     devminor_field = String.duplicate(<<0>>, 8)
     prefix_field = String.duplicate(<<0>>, 155)
+    # Padding to reach 512 bytes
+    padding_field = String.duplicate(<<0>>, 12)
 
     header_without_checksum =
       filename_field <>
@@ -342,7 +349,8 @@ defmodule Upload.Deployer.TarExtractorTest do
         group_field <>
         devmajor_field <>
         devminor_field <>
-        prefix_field
+        prefix_field <>
+        padding_field
 
     checksum =
       header_without_checksum

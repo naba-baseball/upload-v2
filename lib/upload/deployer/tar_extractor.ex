@@ -17,6 +17,18 @@ defmodule Upload.Deployer.TarExtractor do
   3. Detect non-UTF-8 filenames with String.valid?/1
   4. Convert Latin-1 bytes to UTF-8
   5. Extract files with correct UTF-8 filenames
+
+  ## Limitations
+
+  This extractor supports UStar format tar archives. Extended headers
+  (PAX 'x' or GNU 'L' for long filenames) are skipped. This is acceptable
+  for static site archives which typically contain short, web-safe filenames.
+
+  ## Security
+
+  - Path traversal attacks are blocked at write time
+  - Compressed file size is limited to 500 MB (matches upload limit)
+  - Decompressed size is limited to 1 GB to prevent zip bomb attacks
   """
 
   require Logger
@@ -34,6 +46,15 @@ defmodule Upload.Deployer.TarExtractor do
   @typeflag_regular_old "\0"
   @typeflag_directory "5"
 
+  # Size limits to prevent zip bomb attacks
+  # 500 MB compressed (matches upload limit)
+  @max_compressed_size 524_288_000
+  # 1 GB decompressed
+  @max_decompressed_size 1_073_741_824
+
+  # Pre-computed zero block for efficient end-of-archive detection
+  @zero_block :binary.copy(<<0>>, @block_size)
+
   @doc """
   Extracts a .tar.gz file to the specified directory.
 
@@ -45,7 +66,8 @@ defmodule Upload.Deployer.TarExtractor do
       {:ok, "/tmp/output"}
   """
   def extract(tarball_path, extract_dir) do
-    with {:ok, gz_data} <- File.read(tarball_path),
+    with :ok <- validate_compressed_size(tarball_path),
+         {:ok, gz_data} <- File.read(tarball_path),
          {:ok, tar_data} <- decompress_gzip(gz_data),
          :ok <- extract_tar(tar_data, extract_dir) do
       {:ok, extract_dir}
@@ -56,14 +78,83 @@ defmodule Upload.Deployer.TarExtractor do
     end
   end
 
-  # Decompress gzip data
+  defp validate_compressed_size(tarball_path) do
+    case File.stat(tarball_path) do
+      {:ok, %{size: size}} when size <= @max_compressed_size ->
+        :ok
+
+      {:ok, %{size: size}} ->
+        {:error, {:file_too_large, size, @max_compressed_size}}
+
+      {:error, reason} ->
+        {:error, {:file_stat_failed, reason}}
+    end
+  end
+
+  # Decompress gzip data with size limit to prevent zip bomb attacks.
+  # Uses streaming decompression to validate size during decompression rather than after.
   defp decompress_gzip(gz_data) do
     try do
-      tar_data = :zlib.gunzip(gz_data)
-      {:ok, tar_data}
+      z = :zlib.open()
+
+      try do
+        # 16 for gzip format, 15 for max window bits
+        :ok = :zlib.inflateInit(z, 16 + 15)
+        tar_data = decompress_stream(z, gz_data, 0, <<>>)
+        :zlib.close(z)
+        {:ok, tar_data}
+      rescue
+        e ->
+          :zlib.close(z)
+          {:error, {:gzip_decompression_failed, Exception.message(e)}}
+      end
     rescue
       e ->
         {:error, {:gzip_decompression_failed, Exception.message(e)}}
+    end
+  end
+
+  # Stream-based decompression with size limit validation
+  defp decompress_stream(z, input, input_offset, acc) when input_offset >= byte_size(input) do
+    # All input processed, finalize decompression
+    case :zlib.inflate(z, []) do
+      [] ->
+        acc
+
+      data ->
+        validate_and_add_data(acc, to_binary(data))
+    end
+  end
+
+  defp decompress_stream(z, input, input_offset, acc) do
+    # Process input in chunks to enable size checking during decompression
+    chunk_size = min(16_384, byte_size(input) - input_offset)
+    chunk = binary_part(input, input_offset, chunk_size)
+
+    case :zlib.inflate(z, chunk) do
+      [] ->
+        # No output yet, continue reading input
+        decompress_stream(z, input, input_offset + chunk_size, acc)
+
+      data ->
+        new_acc = validate_and_add_data(acc, to_binary(data))
+        decompress_stream(z, input, input_offset + chunk_size, new_acc)
+    end
+  end
+
+  # Convert zlib output (which may be a list of binaries) to a single binary
+  defp to_binary(data) when is_binary(data), do: data
+  defp to_binary(list) when is_list(list), do: IO.iodata_to_binary(list)
+
+  # Validate and accumulate decompressed data, checking size limits
+  defp validate_and_add_data(acc, data) do
+    new_acc = acc <> data
+    size = byte_size(new_acc)
+
+    if size <= @max_decompressed_size do
+      new_acc
+    else
+      raise "Decompressed data exceeds #{@max_decompressed_size} bytes limit (current: #{size})"
     end
   end
 
@@ -74,7 +165,8 @@ defmodule Upload.Deployer.TarExtractor do
   end
 
   # Parse tar blocks recursively
-  defp parse_tar_blocks(tar_data, extract_dir, offset) when byte_size(tar_data) - offset < @block_size do
+  defp parse_tar_blocks(tar_data, _extract_dir, offset)
+       when byte_size(tar_data) - offset < @block_size do
     # End of archive (or padding)
     :ok
   end
@@ -109,9 +201,6 @@ defmodule Upload.Deployer.TarExtractor do
           padded_size = round_up_to_block_size(size)
           next_offset = offset + @block_size + padded_size
           parse_tar_blocks(tar_data, extract_dir, next_offset)
-
-        {:error, _} = error ->
-          error
       end
     end
   end
@@ -178,13 +267,17 @@ defmodule Upload.Deployer.TarExtractor do
     _ -> 0
   end
 
-  # Ensure filename is valid UTF-8, converting from Latin-1 if necessary
+  # Ensure filename is valid UTF-8, converting from Latin-1 if necessary.
+  #
+  # Latin-1 (ISO-8859-1) bytes 0x00-0xFF map directly to Unicode codepoints
+  # U+0000 to U+00FF. This allows a simple conversion:
+  # 1. :binary.bin_to_list/1 returns each byte as an integer (0-255)
+  # 2. List.to_string/1 interprets those integers as Unicode codepoints
+  # 3. The result is valid UTF-8 representing the same characters
   defp ensure_utf8(filename) when is_binary(filename) do
     if String.valid?(filename) do
       filename
     else
-      # Filename is not valid UTF-8, assume Latin-1 encoding
-      # Convert each byte to its Unicode codepoint (Latin-1 is 1:1 with Unicode)
       filename
       |> :binary.bin_to_list()
       |> List.to_string()
@@ -242,10 +335,6 @@ defmodule Upload.Deployer.TarExtractor do
     end
   end
 
-  # Check if block is all zeros
-  defp all_zeros?(block) do
-    block
-    |> :binary.bin_to_list()
-    |> Enum.all?(&(&1 == 0))
-  end
+  # Check if block is all zeros (end-of-archive marker)
+  defp all_zeros?(block), do: block == @zero_block
 end

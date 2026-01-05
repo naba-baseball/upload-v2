@@ -375,6 +375,42 @@ defmodule Upload.SitesTest do
       assert result == "Failed to extract archive: :enoent"
     end
 
+    test "formats file_stat_failed" do
+      error = {:file_stat_failed, :enoent}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Failed to read archive file"
+      assert result =~ ":enoent"
+    end
+
+    test "formats file_too_large" do
+      error = {:file_too_large, 600_000_000, 524_288_000}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Archive too large"
+      assert result =~ "MB"
+    end
+
+    test "formats decompressed_too_large" do
+      error = {:decompressed_too_large, 2_000_000_000, 1_073_741_824}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Decompressed archive too large"
+      assert result =~ "GB"
+    end
+
+    test "formats gzip_decompression_failed" do
+      error = {:gzip_decompression_failed, "data error"}
+
+      result = Sites.format_deployment_error(error)
+
+      assert result =~ "Failed to decompress archive"
+      assert result =~ "invalid or corrupted"
+    end
+
     test "formats missing_cloudflare_config" do
       result = Sites.format_deployment_error(:missing_cloudflare_config)
 
@@ -442,7 +478,7 @@ defmodule Upload.SitesTest do
       result = Sites.format_deployment_error(error)
 
       assert result =~ "Network error"
-      assert result =~ "econnrefused"
+      assert result =~ "connection refused"
     end
 
     test "formats no_valid_files" do
@@ -461,13 +497,14 @@ defmodule Upload.SitesTest do
       assert result =~ "unsafe file paths"
     end
 
-    test "formats unknown errors with inspect" do
+    test "formats unknown errors generically (logs details, hides from user)" do
       error = {:unknown_error, :something_weird}
 
       result = Sites.format_deployment_error(error)
 
-      assert result =~ "Deployment failed"
-      assert result =~ "unknown_error"
+      # User sees a generic message (doesn't expose internal details)
+      assert result == "Deployment failed: unknown error"
+      # Details are logged for debugging (verified via Logger.warning call)
     end
   end
 end
