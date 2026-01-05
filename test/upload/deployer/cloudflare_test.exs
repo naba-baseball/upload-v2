@@ -206,15 +206,24 @@ defmodule Upload.Deployer.CloudflareTest do
     end
 
     test "returns error for non-existent tarball" do
-      assert {:error, {:extraction_failed, _}} =
+      assert {:error, {:file_stat_failed, :enoent}} =
                Cloudflare.extract_tarball("/non/existent/file.tar.gz")
     end
 
-    test "returns error for path traversal attempts", %{tmp_dir: tmp_dir} do
+    test "returns error for path traversal attempts and prevents escape", %{tmp_dir: tmp_dir} do
       # Create a tarball with path traversal attempt
       tarball_path = create_malicious_tarball(tmp_dir)
 
+      # Attempt extraction should fail
       assert {:error, {:path_traversal_detected, _}} = Cloudflare.extract_tarball(tarball_path)
+
+      # Verify that no files were created outside the extraction directory
+      # or with parent directory references (../.. content should never exist)
+      parent_dir = Path.dirname(tmp_dir)
+      escaped_file = Path.join(parent_dir, "escape.txt")
+
+      refute File.exists?(escaped_file),
+             "Security breach: extracted file escaped the archive directory"
     end
   end
 
@@ -239,63 +248,81 @@ defmodule Upload.Deployer.CloudflareTest do
     tarball_path
   end
 
-  # Helper to create a tarball with path traversal
+  # Helper to create a tarball with path traversal (manually crafted)
   defp create_malicious_tarball(tmp_dir) do
-    source_dir = Path.join(tmp_dir, "malicious_#{:erlang.unique_integer([:positive])}")
-    File.mkdir_p!(source_dir)
+    file_content = "malicious content"
+    file_size = byte_size(file_content)
 
-    # Create a file with path traversal in the name
-    # We use a symbolic link to simulate path traversal since tar will follow it
-    malicious_dir = Path.join(source_dir, "subdir")
-    File.mkdir_p!(malicious_dir)
+    # Filename with path traversal
+    traversal_filename = "../escape.txt"
 
-    # Create an actual traversal by making the tarball manually with absolute paths
-    # For testing, we create a file and then modify the tarball
-    File.write!(Path.join(malicious_dir, "safe.txt"), "safe content")
+    # Build tar header manually (512 bytes total)
+    filename_field = String.pad_trailing(traversal_filename, 100, <<0>>)
+    mode_field = String.pad_trailing("0000644", 8, <<0>>)
+    uid_field = String.pad_trailing("0000000", 8, <<0>>)
+    gid_field = String.pad_trailing("0000000", 8, <<0>>)
+    size_octal = Integer.to_string(file_size, 8)
+    size_field = String.pad_leading(size_octal, 11, "0") <> " "
+    mtime_field = String.pad_trailing("14000000000", 12, <<0>>)
+    checksum_placeholder = "        "
+    typeflag = "0"
+    linkname_field = String.duplicate(<<0>>, 100)
+    ustar_magic = "ustar  "
+    ustar_version = <<0, 0>>
+    owner_field = String.duplicate(<<0>>, 32)
+    group_field = String.duplicate(<<0>>, 32)
+    devmajor_field = String.duplicate(<<0>>, 8)
+    devminor_field = String.duplicate(<<0>>, 8)
+    prefix_field = String.duplicate(<<0>>, 155)
+    # Padding to reach 512 bytes
+    padding_field = String.duplicate(<<0>>, 12)
 
-    tarball_path = Path.join(tmp_dir, "malicious_#{:erlang.unique_integer([:positive])}.tar.gz")
+    header_without_checksum =
+      filename_field <>
+        mode_field <>
+        uid_field <>
+        gid_field <>
+        size_field <>
+        mtime_field <>
+        checksum_placeholder <>
+        typeflag <>
+        linkname_field <>
+        ustar_magic <>
+        ustar_version <>
+        owner_field <>
+        group_field <>
+        devmajor_field <>
+        devminor_field <>
+        prefix_field <>
+        padding_field
 
-    # Create initial tarball
-    {_, 0} = System.cmd("tar", ["-czf", tarball_path, "-C", source_dir, "."])
+    checksum =
+      header_without_checksum
+      |> :binary.bin_to_list()
+      |> Enum.sum()
 
-    # For a real path traversal test, we need to craft a tarball with "../" in paths
-    # This is complex to do programmatically, so we'll create a simpler test
-    # by creating a tarball with a symlink that points outside
+    checksum_str = String.pad_leading(Integer.to_string(checksum, 8), 6, "0") <> <<0, 32>>
 
-    # Actually, let's create a proper test - make a tarball with ../ in path
-    traversal_dir = Path.join(tmp_dir, "traversal_#{:erlang.unique_integer([:positive])}")
-    File.mkdir_p!(Path.join(traversal_dir, "normal"))
-    File.write!(Path.join(traversal_dir, "normal/file.txt"), "content")
+    header =
+      binary_part(header_without_checksum, 0, 148) <>
+        checksum_str <>
+        binary_part(header_without_checksum, 156, 512 - 156)
 
-    # Create the tarball with transform to inject ../
-    traversal_tarball =
-      Path.join(tmp_dir, "traversal_#{:erlang.unique_integer([:positive])}.tar.gz")
+    file_data_padded =
+      if rem(file_size, 512) == 0 do
+        file_content
+      else
+        padding_size = 512 - rem(file_size, 512)
+        file_content <> String.duplicate(<<0>>, padding_size)
+      end
 
-    # Use GNU tar's --transform or fall back to creating manually
-    # On macOS, we need to use a different approach
-    case System.cmd("tar", ["--version"], stderr_to_stdout: true) do
-      {output, _} when is_binary(output) ->
-        if String.contains?(output, "GNU") do
-          # GNU tar - use transform
-          {_, 0} =
-            System.cmd("tar", [
-              "-czf",
-              traversal_tarball,
-              "-C",
-              traversal_dir,
-              "--transform",
-              "s|normal|../escape|",
-              "."
-            ])
-        else
-          # BSD tar (macOS) - create files with literal ../ in name (which tar will reject on extract)
-          # This is tricky - for now create with symlink approach
-          File.mkdir_p!(Path.join(traversal_dir, "..\\escape"))
-          File.write!(Path.join(traversal_dir, "..\\escape/bad.txt"), "bad content")
-          {_, 0} = System.cmd("tar", ["-czf", traversal_tarball, "-C", traversal_dir, "."])
-        end
-    end
+    end_marker = String.duplicate(<<0>>, 1024)
+    tar_data = header <> file_data_padded <> end_marker
+    gz_data = :zlib.gzip(tar_data)
 
-    traversal_tarball
+    tarball_path = Path.join(tmp_dir, "traversal_#{:erlang.unique_integer([:positive])}.tar.gz")
+    File.write!(tarball_path, gz_data)
+
+    tarball_path
   end
 end

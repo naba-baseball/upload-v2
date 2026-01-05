@@ -70,6 +70,27 @@ defmodule Upload.Workers.DeploymentWorker do
     {:cancel, reason}
   end
 
+  # File/archive errors are non-retryable
+  defp handle_deployment_error({:file_stat_failed, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
+  defp handle_deployment_error({:file_too_large, _, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
+  defp handle_deployment_error({:decompressed_too_large, _, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
+  defp handle_deployment_error({:gzip_decompression_failed, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
   # Retryable errors - let Oban retry
   defp handle_deployment_error(reason, _tarball_path) do
     {:error, reason}

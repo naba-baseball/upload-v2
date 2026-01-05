@@ -16,6 +16,7 @@ defmodule Upload.Deployer.Cloudflare do
   require Logger
 
   alias Upload.Deployer.Cloudflare.{Client, Manifest, WorkerTemplate}
+  alias Upload.Deployer.TarExtractor
   alias Upload.Sites.Site
 
   @batch_size 100
@@ -69,27 +70,24 @@ defmodule Upload.Deployer.Cloudflare do
   @doc """
   Extracts a tarball to a temporary directory.
 
+  Uses a pure Elixir tar extractor that handles Latin-1 encoded filenames
+  by converting them to UTF-8. Path traversal protection is handled by
+  the TarExtractor at write time.
+
   Returns `{:ok, extract_dir}` or `{:error, reason}`.
   """
   def extract_tarball(tarball_path) do
     extract_dir = Path.join(System.tmp_dir!(), "extract_#{:erlang.unique_integer([:positive])}")
     File.mkdir_p!(extract_dir)
 
-    case System.cmd("tar", ["-xzf", tarball_path, "-C", extract_dir],
-           stderr_to_stdout: true,
-           env: [{"LC_ALL", "en_US.UTF-8"}, {"LANG", "en_US.UTF-8"}]
-         ) do
-      {_, 0} ->
-        # Validate no path traversal in extracted files
-        case validate_extracted_paths(extract_dir) do
-          :ok -> {:ok, extract_dir}
-          {:error, _} = error -> error
-        end
+    case TarExtractor.extract(tarball_path, extract_dir) do
+      {:ok, _} ->
+        {:ok, extract_dir}
 
-      {output, code} ->
-        reason = inspect(output)
-        Logger.error(tar_extraction_failed: tarball_path, exit_code: code, output: reason)
-        {:error, {:extraction_failed, reason}}
+      {:error, _} = error ->
+        # Clean up partially extracted directory on failure
+        File.rm_rf(extract_dir)
+        error
     end
   end
 
@@ -166,20 +164,5 @@ defmodule Upload.Deployer.Cloudflare do
   def cleanup(extract_dir) do
     File.rm_rf!(extract_dir)
     :ok
-  end
-
-  # Private functions
-
-  defp validate_extracted_paths(extract_dir) do
-    extract_dir
-    |> Manifest.list_files_recursive()
-    |> Enum.find(fn path ->
-      relative = Path.relative_to(path, extract_dir)
-      String.contains?(relative, "..") or Path.type(relative) == :absolute
-    end)
-    |> case do
-      nil -> :ok
-      bad_path -> {:error, {:path_traversal_detected, bad_path}}
-    end
   end
 end

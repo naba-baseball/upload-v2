@@ -1,4 +1,5 @@
 defmodule Upload.Sites do
+  require Logger
   import Ecto.Query, warn: false
   alias Upload.Repo
   alias Upload.Sites.Site
@@ -165,8 +166,28 @@ defmodule Upload.Sites do
     "Failed to extract archive: #{String.trim(output)}"
   end
 
-  def format_deployment_error({:extraction_failed, _reason}) do
-    "Failed to extract archive: unknown error"
+  def format_deployment_error({:extraction_failed, reason}) do
+    "Failed to extract archive: #{inspect(reason)}"
+  end
+
+  def format_deployment_error({:file_stat_failed, reason}) do
+    "Failed to read archive file: #{inspect(reason)}"
+  end
+
+  def format_deployment_error({:file_too_large, size, max}) do
+    "Archive too large: #{format_bytes(size)} exceeds #{format_bytes(max)} limit"
+  end
+
+  def format_deployment_error({:decompressed_too_large, size, max}) do
+    "Decompressed archive too large: #{format_bytes(size)} exceeds #{format_bytes(max)} limit"
+  end
+
+  def format_deployment_error({:gzip_decompression_failed, _reason}) do
+    "Failed to decompress archive: invalid or corrupted gzip file"
+  end
+
+  def format_deployment_error({:file_write_failed, _path, _reason}) do
+    "Failed to write extracted files: insufficient disk space or permission denied"
   end
 
   def format_deployment_error(:missing_cloudflare_config) do
@@ -191,11 +212,11 @@ defmodule Upload.Sites do
   end
 
   def format_deployment_error({:request_failed, %{reason: reason}}) do
-    "Network error during deployment: #{inspect(reason)}"
+    "Network error during deployment: #{friendly_error_reason(reason)}"
   end
 
   def format_deployment_error({:request_failed, reason}) do
-    "Network error during deployment: #{inspect(reason)}"
+    "Network error during deployment: #{friendly_error_reason(reason)}"
   end
 
   def format_deployment_error(:no_valid_files) do
@@ -206,16 +227,37 @@ defmodule Upload.Sites do
     "Invalid archive: contains unsafe file paths"
   end
 
-  def format_deployment_error(_error) do
+  # Catch-all for unexpected errors - log for debugging but show generic message to user
+  def format_deployment_error(error) do
+    Logger.warning("Unexpected deployment error: #{inspect(error)}")
     "Deployment failed: unknown error"
   end
+
   def format_deployment_error() do
     "Deployment failed: unknown error"
   end
 
+  # Convert common error reasons to user-friendly messages
+  defp friendly_error_reason(:econnrefused), do: "connection refused (service unavailable)"
+  defp friendly_error_reason(:timeout), do: "connection timeout"
+  defp friendly_error_reason(:nxdomain), do: "DNS resolution failed"
+  defp friendly_error_reason(reason), do: "#{inspect(reason)}"
+
   defp extract_api_error_message(%{"errors" => [%{"message" => message} | _]}), do: message
   defp extract_api_error_message(%{"error" => message}) when is_binary(message), do: message
   defp extract_api_error_message(body), do: inspect(body)
+
+  defp format_bytes(bytes) when bytes >= 1_073_741_824 do
+    "#{Float.round(bytes / 1_073_741_824, 1)} GB"
+  end
+
+  defp format_bytes(bytes) when bytes >= 1_048_576 do
+    "#{Float.round(bytes / 1_048_576, 1)} MB"
+  end
+
+  defp format_bytes(bytes) do
+    "#{bytes} bytes"
+  end
 
   @doc """
   Sets the worker name for a site.

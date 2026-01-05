@@ -97,6 +97,7 @@ defmodule UploadWeb.AuthControllerTest do
 
       # Verify max_age is set to 60 days (in seconds)
       expected_max_age = 60 * 24 * 60 * 60
+
       assert session_cookie.max_age == expected_max_age,
              "Session cookie should have max_age of #{expected_max_age} seconds (60 days), got #{session_cookie.max_age}"
     end
