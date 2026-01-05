@@ -91,6 +91,13 @@ defmodule Upload.Workers.DeploymentWorker do
     {:cancel, reason}
   end
 
+  # Cloudflare API errors (4xx/5xx) should not be retried
+  defp handle_deployment_error({:api_error, status, _body} = reason, tarball_path)
+       when status >= 400 and status < 600 do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
   # Retryable errors - let Oban retry
   defp handle_deployment_error(reason, _tarball_path) do
     {:error, reason}

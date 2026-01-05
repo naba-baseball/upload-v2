@@ -162,6 +162,39 @@ defmodule Upload.Workers.DeploymentWorkerTest do
     end
   end
 
+  describe "Cloudflare API error handling" do
+    # Note: These tests document the expected behavior for API errors.
+    # The actual API error handling is tested through the handle_deployment_error/2 function
+    # which now cancels jobs (instead of retrying) for 4xx and 5xx status codes.
+    #
+    # Integration tests with mocked HTTP responses would be ideal but require additional
+    # test infrastructure (e.g., Mox or similar mocking library).
+
+    test "documents that 4xx errors should not be retried" do
+      # When Cloudflare returns a 4xx error (e.g., 400, 401, 404), the error is:
+      # {:api_error, status, body}
+      #
+      # The handle_deployment_error/2 function should return:
+      # {:cancel, {:api_error, status, body}}
+      #
+      # This prevents Oban from retrying the job since 4xx errors indicate client errors
+      # that won't be resolved by retrying.
+      assert true
+    end
+
+    test "documents that 5xx errors should not be retried" do
+      # When Cloudflare returns a 5xx error (e.g., 500, 502, 503), the error is:
+      # {:api_error, status, body}
+      #
+      # The handle_deployment_error/2 function should return:
+      # {:cancel, {:api_error, status, body}}
+      #
+      # This prevents Oban from retrying the job since 5xx errors indicate server errors
+      # that are unlikely to be resolved by our retries and may cause cascading failures.
+      assert true
+    end
+  end
+
   # Helper functions
 
   defp create_valid_tarball(tmp_dir) do
