@@ -31,7 +31,13 @@ defmodule Upload.Deployer.Cloudflare.WorkerTemplate do
     %{
       main_module: "worker.js",
       compatibility_date: Date.utc_today() |> Date.to_iso8601(),
-      assets: %{jwt: completion_jwt}
+      assets: %{jwt: completion_jwt},
+      bindings: [
+        %{
+          type: "assets",
+          name: "ASSETS"
+        }
+      ]
     }
   end
 end
