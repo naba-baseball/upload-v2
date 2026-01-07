@@ -1,12 +1,18 @@
 defmodule Upload.Workers.DeploymentWorkerTest do
   use Upload.DataCase
 
+  import Mox
   import Upload.SitesFixtures
 
   alias Upload.Workers.DeploymentWorker
   alias Upload.Sites
 
+  # Allow async tests to use the mock
+  setup :verify_on_exit!
+
   setup do
+    # By default, delegate to the real implementation
+    stub_with(Upload.Deployer.CloudflareMock, Upload.Deployer.Cloudflare)
     # Ensure cloudflare config is empty so deploy fails with missing config
     original_config = Application.get_env(:upload, :cloudflare)
     Application.put_env(:upload, :cloudflare, [])
@@ -163,35 +169,113 @@ defmodule Upload.Workers.DeploymentWorkerTest do
   end
 
   describe "Cloudflare API error handling" do
-    # Note: These tests document the expected behavior for API errors.
-    # The actual API error handling is tested through the handle_deployment_error/2 function
-    # which now cancels jobs (instead of retrying) for 4xx and 5xx status codes.
-    #
-    # Integration tests with mocked HTTP responses would be ideal but require additional
-    # test infrastructure (e.g., Mox or similar mocking library).
+    test "cancels job for 400 Bad Request errors", %{tarball_path: tarball_path} do
+      site = site_fixture()
 
-    test "documents that 4xx errors should not be retried" do
-      # When Cloudflare returns a 4xx error (e.g., 400, 401, 404), the error is:
-      # {:api_error, status, body}
-      #
-      # The handle_deployment_error/2 function should return:
-      # {:cancel, {:api_error, status, body}}
-      #
-      # This prevents Oban from retrying the job since 4xx errors indicate client errors
-      # that won't be resolved by retrying.
-      assert true
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 400, %{"error" => "Bad Request"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      result = DeploymentWorker.perform(job)
+
+      assert {:cancel, {:api_error, 400, _body}} = result
     end
 
-    test "documents that 5xx errors should not be retried" do
-      # When Cloudflare returns a 5xx error (e.g., 500, 502, 503), the error is:
-      # {:api_error, status, body}
-      #
-      # The handle_deployment_error/2 function should return:
-      # {:cancel, {:api_error, status, body}}
-      #
-      # This prevents Oban from retrying the job since 5xx errors indicate server errors
-      # that are unlikely to be resolved by our retries and may cause cascading failures.
-      assert true
+    test "cancels job for 401 Unauthorized errors", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 401, %{"error" => "Unauthorized"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      result = DeploymentWorker.perform(job)
+
+      assert {:cancel, {:api_error, 401, _body}} = result
+    end
+
+    test "cancels job for 403 Forbidden errors", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 403, %{"error" => "Forbidden"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      result = DeploymentWorker.perform(job)
+
+      assert {:cancel, {:api_error, 403, _body}} = result
+    end
+
+    test "cancels job for 500 Internal Server errors", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 500, %{"error" => "Internal Server Error"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      result = DeploymentWorker.perform(job)
+
+      assert {:cancel, {:api_error, 500, _body}} = result
+    end
+
+    test "cancels job for 502 Bad Gateway errors", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 502, %{"error" => "Bad Gateway"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      result = DeploymentWorker.perform(job)
+
+      assert {:cancel, {:api_error, 502, _body}} = result
+    end
+
+    test "cancels job for 503 Service Unavailable errors", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 503, %{"error" => "Service Unavailable"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      result = DeploymentWorker.perform(job)
+
+      assert {:cancel, {:api_error, 503, _body}} = result
+    end
+
+    test "cleans up tarball on API error", %{tmp_dir: tmp_dir} do
+      site = site_fixture()
+      tarball_path = create_valid_tarball(tmp_dir)
+
+      assert File.exists?(tarball_path)
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 403, %{"error" => "Forbidden"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      DeploymentWorker.perform(job)
+
+      refute File.exists?(tarball_path)
+    end
+
+    test "marks site as failed with appropriate error message", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
+        {:error, {:api_error, 401, %{"error" => "Unauthorized"}}}
+      end)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+      DeploymentWorker.perform(job)
+
+      updated_site = Sites.get_site!(site.id)
+      assert updated_site.deployment_status == "failed"
+      assert updated_site.last_deployment_error =~ "Authentication failed"
     end
   end
 

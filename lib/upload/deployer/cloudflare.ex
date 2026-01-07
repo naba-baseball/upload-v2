@@ -13,6 +13,11 @@ defmodule Upload.Deployer.Cloudflare do
   8. Clean up temporary files
   """
 
+  @callback deploy(site :: Upload.Sites.Site.t(), tarball_path :: String.t()) ::
+              {:ok, Upload.Sites.Site.t()} | {:error, term()}
+
+  @behaviour __MODULE__
+
   require Logger
 
   alias Upload.Deployer.Cloudflare.{Client, Manifest, WorkerTemplate}
@@ -27,6 +32,7 @@ defmodule Upload.Deployer.Cloudflare do
   Takes a site and the path to the uploaded .tar.gz file.
   Returns `{:ok, site}` on success or `{:error, reason}` on failure.
   """
+  @impl true
   def deploy(%Site{} = site, tarball_path) do
     worker_name = Site.worker_name(site)
 
