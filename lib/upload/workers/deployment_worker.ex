@@ -10,9 +10,12 @@ defmodule Upload.Workers.DeploymentWorker do
 
   require Logger
 
-  alias Upload.Deployer.Cloudflare
   alias Upload.Sites
   alias Upload.Sites.Site
+
+  defp cloudflare_deployer do
+    Application.get_env(:upload, :cloudflare_deployer, Upload.Deployer.Cloudflare)
+  end
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"site_id" => site_id, "tarball_path" => tarball_path}}) do
@@ -30,7 +33,7 @@ defmodule Upload.Workers.DeploymentWorker do
       Sites.set_worker_name(site, worker_name)
     end
 
-    case Cloudflare.deploy(site, tarball_path) do
+    case cloudflare_deployer().deploy(site, tarball_path) do
       {:ok, _site} ->
         Sites.mark_deployed(site)
         cleanup_tarball(tarball_path)
@@ -87,6 +90,13 @@ defmodule Upload.Workers.DeploymentWorker do
   end
 
   defp handle_deployment_error({:gzip_decompression_failed, _} = reason, tarball_path) do
+    cleanup_tarball(tarball_path)
+    {:cancel, reason}
+  end
+
+  # Cloudflare API errors (4xx/5xx) should not be retried
+  defp handle_deployment_error({:api_error, status, _body} = reason, tarball_path)
+       when status >= 400 and status < 600 do
     cleanup_tarball(tarball_path)
     {:cancel, reason}
   end
