@@ -35,3 +35,6 @@ upload-*.tar
 npm-debug.log
 /assets/node_modules/
 .ds_store
+
+# Claude Code local settings (keep project settings.json)
+.claude/settings.local.json

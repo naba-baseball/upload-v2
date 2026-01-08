@@ -1,5 +1,7 @@
 [tools]
+erlang = "latest"
 elixir = "latest"
+node = "latest"
 
 [tasks.start_server]
 description  = "Start the phoenix dev server in an IEx session"
