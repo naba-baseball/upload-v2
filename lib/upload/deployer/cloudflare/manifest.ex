@@ -40,14 +40,6 @@ defmodule Upload.Deployer.Cloudflare.Manifest do
   end
 
   @doc """
-  Builds a manifest and returns only the manifest map, ignoring skipped files.
-  """
-  def build!(directory) do
-    %{manifest: manifest} = build(directory)
-    manifest
-  end
-
-  @doc """
   Returns a list of all files in the directory recursively.
   """
   def list_files_recursive(directory) do
