@@ -36,6 +36,20 @@ echo "Installing tools via Mise..."
 mise trust --all 2>/dev/null || true
 mise install
 
+# Install Beads CLI (bd) if not already installed
+if ! command -v bd &> /dev/null; then
+  echo "Installing Beads CLI (bd)..."
+  curl -sSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
+
+  # Ensure bd is in PATH for this session and future commands
+  export PATH="$HOME/.local/bin:$PATH"
+
+  if [ -n "$CLAUDE_ENV_FILE" ]; then
+    # Only add if not already present
+    grep -q 'bd' "$CLAUDE_ENV_FILE" || echo "# Beads CLI" >> "$CLAUDE_ENV_FILE"
+  fi
+fi
+
 # Persist mise environment for subsequent bash commands
 if [ -n "$CLAUDE_ENV_FILE" ]; then
   mise env >> "$CLAUDE_ENV_FILE"
@@ -45,6 +59,7 @@ fi
 echo "Verifying installations..."
 elixir --version
 node --version
+bd --version 2>/dev/null || echo "Warning: bd not found in PATH"
 
 # Install Elixir dependencies
 echo "Installing Elixir dependencies..."
