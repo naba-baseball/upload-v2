@@ -3,14 +3,15 @@ defmodule Upload.Sites.Site do
   import Ecto.Changeset
 
   @deployment_statuses ~w(pending deploying deployed failed)
+  @routing_modes ~w(subdomain subpath both)
 
   schema "sites" do
     field :name, :string
     field :subdomain, :string
     field :base_domain, :string, default: "nabaleague.com"
+    field :routing_mode, :string, default: "subdomain"
 
-    # Cloudflare deployment fields
-    field :cloudflare_worker_name, :string
+    # Deployment fields
     field :deployment_status, :string, default: "pending"
     field :last_deployed_at, :utc_datetime
     field :last_deployment_error, :string
@@ -23,12 +24,13 @@ defmodule Upload.Sites.Site do
   @doc false
   def changeset(site, attrs) do
     site
-    |> cast(attrs, [:name, :subdomain, :base_domain])
+    |> cast(attrs, [:name, :subdomain, :base_domain, :routing_mode])
     |> validate_required([:name, :subdomain])
     |> validate_format(:subdomain, ~r/^[a-z0-9-]+$/,
       message: "must contain only lowercase letters, numbers, and hyphens"
     )
     |> validate_length(:subdomain, min: 1, max: 63)
+    |> validate_inclusion(:routing_mode, @routing_modes)
     |> unique_constraint(:subdomain)
   end
 
@@ -38,7 +40,6 @@ defmodule Upload.Sites.Site do
   def deployment_changeset(site, attrs) do
     site
     |> cast(attrs, [
-      :cloudflare_worker_name,
       :deployment_status,
       :last_deployed_at,
       :last_deployment_error
@@ -54,8 +55,9 @@ defmodule Upload.Sites.Site do
   end
 
   @doc """
-  Returns the worker name for this site, generating one if not set.
+  Returns the subpath for this site.
   """
-  def worker_name(%__MODULE__{cloudflare_worker_name: name}) when is_binary(name), do: name
-  def worker_name(%__MODULE__{subdomain: subdomain}), do: "upload-site-#{subdomain}"
+  def subpath(%__MODULE__{subdomain: subdomain}) do
+    "/site/#{subdomain}"
+  end
 end

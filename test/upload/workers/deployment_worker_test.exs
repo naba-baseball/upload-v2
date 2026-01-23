@@ -1,30 +1,12 @@
 defmodule Upload.Workers.DeploymentWorkerTest do
   use Upload.DataCase
 
-  import Mox
   import Upload.SitesFixtures
 
   alias Upload.Workers.DeploymentWorker
   alias Upload.Sites
 
-  # Allow async tests to use the mock
-  setup :verify_on_exit!
-
   setup do
-    # By default, delegate to the real implementation
-    stub_with(Upload.Deployer.CloudflareMock, Upload.Deployer.Cloudflare)
-    # Ensure cloudflare config is empty so deploy fails with missing config
-    original_config = Application.get_env(:upload, :cloudflare)
-    Application.put_env(:upload, :cloudflare, [])
-
-    on_exit(fn ->
-      if original_config do
-        Application.put_env(:upload, :cloudflare, original_config)
-      else
-        Application.delete_env(:upload, :cloudflare)
-      end
-    end)
-
     # Create a temporary tarball for testing
     tmp_dir = Path.join(System.tmp_dir!(), "worker_test_#{:erlang.unique_integer([:positive])}")
     File.mkdir_p!(tmp_dir)
@@ -33,50 +15,55 @@ defmodule Upload.Workers.DeploymentWorkerTest do
 
     on_exit(fn ->
       File.rm_rf!(tmp_dir)
+      # Clean up any deployed sites
+      priv_sites_dir = Path.join([:code.priv_dir(:upload), "static", "sites"])
+      File.rm_rf!(priv_sites_dir)
+      File.mkdir_p!(priv_sites_dir)
     end)
 
     {:ok, tmp_dir: tmp_dir, tarball_path: tarball_path}
   end
 
-  describe "perform/1 with valid args" do
-    test "marks site as deploying before deployment", %{tarball_path: tarball_path} do
+  describe "perform/1 with valid tarball" do
+    test "extracts tarball to site directory", %{tarball_path: tarball_path} do
+      site = site_fixture()
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+
+      DeploymentWorker.perform(job)
+
+      site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+      assert File.exists?(Path.join(site_dir, "index.html"))
+      assert File.exists?(Path.join(site_dir, "style.css"))
+    end
+
+    test "marks site as deploying before extraction", %{tarball_path: tarball_path} do
       site = site_fixture()
       Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
 
       job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
 
-      # Will fail due to missing cloudflare config, but should still mark as deploying first
       DeploymentWorker.perform(job)
 
       # Should have received a deploying update
       assert_received {:deployment_updated, %{deployment_status: "deploying"}}
     end
 
-    test "returns {:cancel, :missing_cloudflare_config} when config is missing", %{
-      tarball_path: tarball_path
-    } do
+    test "marks site as deployed on success", %{tarball_path: tarball_path} do
       site = site_fixture()
 
       job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
 
       result = DeploymentWorker.perform(job)
 
-      assert result == {:cancel, :missing_cloudflare_config}
-    end
-
-    test "marks site as failed when deployment fails", %{tarball_path: tarball_path} do
-      site = site_fixture()
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-
-      DeploymentWorker.perform(job)
-
+      assert result == :ok
       updated_site = Sites.get_site!(site.id)
-      assert updated_site.deployment_status == "failed"
-      assert updated_site.last_deployment_error =~ "not configured"
+      assert updated_site.deployment_status == "deployed"
+      assert updated_site.last_deployed_at != nil
+      assert updated_site.last_deployment_error == nil
     end
 
-    test "cleans up tarball on non-retryable error", %{tarball_path: tarball_path} do
+    test "cleans up tarball after successful deployment", %{tarball_path: tarball_path} do
       site = site_fixture()
 
       assert File.exists?(tarball_path)
@@ -86,6 +73,26 @@ defmodule Upload.Workers.DeploymentWorkerTest do
       DeploymentWorker.perform(job)
 
       refute File.exists?(tarball_path)
+    end
+
+    test "cleans up existing site directory before extraction", %{tmp_dir: tmp_dir} do
+      site = site_fixture()
+      site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+
+      # Create existing site directory with old file
+      File.mkdir_p!(site_dir)
+      old_file = Path.join(site_dir, "old_file.txt")
+      File.write!(old_file, "old content")
+
+      tarball_path = create_valid_tarball(tmp_dir)
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+
+      DeploymentWorker.perform(job)
+
+      # Old file should be gone
+      refute File.exists?(old_file)
+      # New files should exist
+      assert File.exists?(Path.join(site_dir, "index.html"))
     end
   end
 
@@ -138,25 +145,13 @@ defmodule Upload.Workers.DeploymentWorkerTest do
       assert updated_site.deployment_status == "failed"
       assert updated_site.last_deployment_error =~ "Failed to read archive file"
     end
-  end
 
-  describe "perform/1 with no valid files" do
-    test "returns {:cancel, :no_valid_files} when tarball has no valid files", %{tmp_dir: tmp_dir} do
+    test "cleans up tarball even on extraction failure", %{tmp_dir: tmp_dir} do
       site = site_fixture()
 
-      # Create a tarball with only invalid file types
-      tarball_path = create_tarball_with_invalid_files(tmp_dir)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-
-      result = DeploymentWorker.perform(job)
-
-      assert result == {:cancel, :no_valid_files}
-    end
-
-    test "cleans up tarball when no valid files", %{tmp_dir: tmp_dir} do
-      site = site_fixture()
-      tarball_path = create_tarball_with_invalid_files(tmp_dir)
+      # Create invalid tarball
+      tarball_path = Path.join(tmp_dir, "invalid.tar.gz")
+      File.write!(tarball_path, "not a valid gzip file")
 
       assert File.exists?(tarball_path)
 
@@ -166,116 +161,60 @@ defmodule Upload.Workers.DeploymentWorkerTest do
 
       refute File.exists?(tarball_path)
     end
-  end
 
-  describe "Cloudflare API error handling" do
-    test "cancels job for 400 Bad Request errors", %{tarball_path: tarball_path} do
+    test "cleans up partial extraction on failure", %{tmp_dir: tmp_dir} do
       site = site_fixture()
+      site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
 
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 400, %{"error" => "Bad Request"}}}
-      end)
+      # Create invalid tarball (no HTML files)
+      tarball_path = create_tarball_with_no_html(tmp_dir)
 
       job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-      result = DeploymentWorker.perform(job)
 
-      assert {:cancel, {:api_error, 400, _body}} = result
-    end
-
-    test "cancels job for 401 Unauthorized errors", %{tarball_path: tarball_path} do
-      site = site_fixture()
-
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 401, %{"error" => "Unauthorized"}}}
-      end)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-      result = DeploymentWorker.perform(job)
-
-      assert {:cancel, {:api_error, 401, _body}} = result
-    end
-
-    test "cancels job for 403 Forbidden errors", %{tarball_path: tarball_path} do
-      site = site_fixture()
-
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 403, %{"error" => "Forbidden"}}}
-      end)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-      result = DeploymentWorker.perform(job)
-
-      assert {:cancel, {:api_error, 403, _body}} = result
-    end
-
-    test "cancels job for 500 Internal Server errors", %{tarball_path: tarball_path} do
-      site = site_fixture()
-
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 500, %{"error" => "Internal Server Error"}}}
-      end)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-      result = DeploymentWorker.perform(job)
-
-      assert {:cancel, {:api_error, 500, _body}} = result
-    end
-
-    test "cancels job for 502 Bad Gateway errors", %{tarball_path: tarball_path} do
-      site = site_fixture()
-
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 502, %{"error" => "Bad Gateway"}}}
-      end)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-      result = DeploymentWorker.perform(job)
-
-      assert {:cancel, {:api_error, 502, _body}} = result
-    end
-
-    test "cancels job for 503 Service Unavailable errors", %{tarball_path: tarball_path} do
-      site = site_fixture()
-
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 503, %{"error" => "Service Unavailable"}}}
-      end)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
-      result = DeploymentWorker.perform(job)
-
-      assert {:cancel, {:api_error, 503, _body}} = result
-    end
-
-    test "cleans up tarball on API error", %{tmp_dir: tmp_dir} do
-      site = site_fixture()
-      tarball_path = create_valid_tarball(tmp_dir)
-
-      assert File.exists?(tarball_path)
-
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 403, %{"error" => "Forbidden"}}}
-      end)
-
-      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
       DeploymentWorker.perform(job)
 
-      refute File.exists?(tarball_path)
+      # Site directory should not exist after failed deployment
+      refute File.exists?(site_dir)
     end
+  end
 
-    test "marks site as failed with appropriate error message", %{tarball_path: tarball_path} do
+  describe "perform/1 with no HTML files" do
+    test "returns {:cancel, :no_html_files} when tarball has no HTML files", %{tmp_dir: tmp_dir} do
       site = site_fixture()
 
-      expect(Upload.Deployer.CloudflareMock, :deploy, fn _site, _path ->
-        {:error, {:api_error, 401, %{"error" => "Unauthorized"}}}
-      end)
+      tarball_path = create_tarball_with_no_html(tmp_dir)
 
       job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+
+      result = DeploymentWorker.perform(job)
+
+      assert result == {:cancel, :no_html_files}
+    end
+
+    test "marks site as failed with appropriate error message", %{tmp_dir: tmp_dir} do
+      site = site_fixture()
+      tarball_path = create_tarball_with_no_html(tmp_dir)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+
       DeploymentWorker.perform(job)
 
       updated_site = Sites.get_site!(site.id)
       assert updated_site.deployment_status == "failed"
-      assert updated_site.last_deployment_error =~ "Authentication failed"
+      assert updated_site.last_deployment_error =~ "must contain at least one HTML file"
+    end
+
+    test "cleans up tarball when no HTML files", %{tmp_dir: tmp_dir} do
+      site = site_fixture()
+      tarball_path = create_tarball_with_no_html(tmp_dir)
+
+      assert File.exists?(tarball_path)
+
+      job = %Oban.Job{args: %{"site_id" => site.id, "tarball_path" => tarball_path}}
+
+      DeploymentWorker.perform(job)
+
+      refute File.exists?(tarball_path)
     end
   end
 
@@ -295,15 +234,15 @@ defmodule Upload.Workers.DeploymentWorkerTest do
     tarball_path
   end
 
-  defp create_tarball_with_invalid_files(tmp_dir) do
-    source_dir = Path.join(tmp_dir, "invalid_#{:erlang.unique_integer([:positive])}")
+  defp create_tarball_with_no_html(tmp_dir) do
+    source_dir = Path.join(tmp_dir, "no_html_#{:erlang.unique_integer([:positive])}")
     File.mkdir_p!(source_dir)
 
-    # Only create files that are not in the allowed extensions list
-    File.write!(Path.join(source_dir, "readme.doc"), "Some doc content")
-    File.write!(Path.join(source_dir, "data.xlsx"), "Some excel content")
+    # Only create non-HTML files
+    File.write!(Path.join(source_dir, "style.css"), "body { color: red; }")
+    File.write!(Path.join(source_dir, "script.js"), "console.log('hi');")
 
-    tarball_path = Path.join(tmp_dir, "invalid_#{:erlang.unique_integer([:positive])}.tar.gz")
+    tarball_path = Path.join(tmp_dir, "no_html_#{:erlang.unique_integer([:positive])}.tar.gz")
 
     {_, 0} = System.cmd("tar", ["-czf", tarball_path, "-C", source_dir, "."])
 

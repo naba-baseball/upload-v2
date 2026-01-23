@@ -16,7 +16,8 @@ defmodule Upload.Deployer.TarExtractor do
   2. Parse tar headers (512-byte blocks)
   3. Detect non-UTF-8 filenames with String.valid?/1
   4. Convert Latin-1 bytes to UTF-8
-  5. Extract files with correct UTF-8 filenames
+  5. Filter out macOS resource fork files (._* AppleDouble format)
+  6. Extract files with correct UTF-8 filenames
 
   ## Limitations
 
@@ -143,8 +144,8 @@ defmodule Upload.Deployer.TarExtractor do
   end
 
   # Convert zlib output (which may be a list of binaries) to a single binary
+  defp to_binary(data) when is_list(data), do: IO.iodata_to_binary(data)
   defp to_binary(data) when is_binary(data), do: data
-  defp to_binary(list) when is_list(list), do: IO.iodata_to_binary(list)
 
   # Validate and accumulate decompressed data, checking size limits
   defp validate_and_add_data(acc, data) do
@@ -229,21 +230,35 @@ defmodule Upload.Deployer.TarExtractor do
     # Convert filename encoding if necessary
     utf8_path = ensure_utf8(full_path)
 
-    # Only extract regular files and directories
-    case typeflag do
-      @typeflag_regular ->
-        {:ok, %{path: utf8_path, size: size, type: :file}}
+    # Skip macOS resource fork files (AppleDouble format)
+    # These are metadata files created by macOS with ._ prefix
+    if macos_resource_fork?(utf8_path) do
+      {:skip, size}
+    else
+      # Only extract regular files and directories
+      case typeflag do
+        @typeflag_regular ->
+          {:ok, %{path: utf8_path, size: size, type: :file}}
 
-      @typeflag_regular_old ->
-        {:ok, %{path: utf8_path, size: size, type: :file}}
+        @typeflag_regular_old ->
+          {:ok, %{path: utf8_path, size: size, type: :file}}
 
-      @typeflag_directory ->
-        {:ok, %{path: utf8_path, size: 0, type: :directory}}
+        @typeflag_directory ->
+          {:ok, %{path: utf8_path, size: 0, type: :directory}}
 
-      _ ->
-        # Skip other file types (symlinks, etc.)
-        {:skip, size}
+        _ ->
+          # Skip other file types (symlinks, etc.)
+          {:skip, size}
+      end
     end
+  end
+
+  # Check if file is a macOS resource fork file (AppleDouble format)
+  # These files start with ._ and contain metadata/extended attributes
+  defp macos_resource_fork?(path) do
+    path
+    |> Path.basename()
+    |> String.starts_with?("._")
   end
 
   # Extract null-terminated string from binary

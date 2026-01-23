@@ -324,10 +324,10 @@ defmodule Upload.SitesTest do
     test "mark_deployment_failed/2 sets status to failed and stores formatted error" do
       site = site_fixture()
 
-      {:ok, updated_site} = Sites.mark_deployment_failed(site, :no_valid_files)
+      {:ok, updated_site} = Sites.mark_deployment_failed(site, :no_html_files)
 
       assert updated_site.deployment_status == "failed"
-      assert updated_site.last_deployment_error =~ "no valid site files"
+      assert updated_site.last_deployment_error =~ "must contain at least one HTML file"
     end
 
     test "mark_deploying/1 broadcasts via PubSub" do
@@ -411,81 +411,11 @@ defmodule Upload.SitesTest do
       assert result =~ "invalid or corrupted"
     end
 
-    test "formats missing_cloudflare_config" do
-      result = Sites.format_deployment_error(:missing_cloudflare_config)
+    test "formats no_html_files" do
+      result = Sites.format_deployment_error(:no_html_files)
 
-      assert result =~ "not configured"
-      assert result =~ "administrator"
-    end
-
-    test "formats api_error with 401 status" do
-      error = {:api_error, 401, %{"error" => "Unauthorized"}}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "Authentication failed"
-      assert result =~ "administrator"
-    end
-
-    test "formats api_error with 403 status" do
-      error = {:api_error, 403, %{"error" => "Forbidden"}}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "Permission denied"
-    end
-
-    test "formats api_error with 5xx status" do
-      error = {:api_error, 503, %{"error" => "Service Unavailable"}}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "temporarily unavailable"
-      assert result =~ "503"
-      assert result =~ "retry"
-    end
-
-    test "formats api_error with other status and extracts message from errors array" do
-      error = {:api_error, 400, %{"errors" => [%{"message" => "Invalid request"}]}}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "400"
-      assert result =~ "Invalid request"
-    end
-
-    test "formats api_error with other status and extracts message from error key" do
-      error = {:api_error, 422, %{"error" => "Validation failed"}}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "422"
-      assert result =~ "Validation failed"
-    end
-
-    test "formats request_failed with reason map" do
-      error = {:request_failed, %{reason: :timeout}}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "Network error"
-      assert result =~ "timeout"
-    end
-
-    test "formats request_failed with other reason" do
-      error = {:request_failed, :econnrefused}
-
-      result = Sites.format_deployment_error(error)
-
-      assert result =~ "Network error"
-      assert result =~ "connection refused"
-    end
-
-    test "formats no_valid_files" do
-      result = Sites.format_deployment_error(:no_valid_files)
-
-      assert result =~ "no valid site files"
-      assert result =~ "HTML"
+      assert result =~ "must contain at least one HTML file"
+      assert result =~ "index.html"
     end
 
     test "formats path_traversal_detected" do

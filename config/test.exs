@@ -32,9 +32,6 @@ config :logger, level: :warning
 # Disable Oban job processing in tests
 config :upload, Oban, testing: :inline
 
-# Use mock for Cloudflare deployer in tests
-config :upload, :cloudflare_deployer, Upload.Deployer.CloudflareMock
-
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
 

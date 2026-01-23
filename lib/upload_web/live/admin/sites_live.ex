@@ -207,9 +207,30 @@ defmodule UploadWeb.Admin.SitesLive do
           <.input field={@form[:name]} type="text" label="Site Name" required />
           <.input field={@form[:subdomain]} type="text" label="Subdomain" required />
         </div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          URL: https://{subdomain_preview(@form[:subdomain].value)}
-        </p>
+        <div>
+          <.input
+            field={@form[:routing_mode]}
+            type="select"
+            label="Routing Mode"
+            options={[
+              {"Subdomain only (default)", "subdomain"},
+              {"Subpath only", "subpath"},
+              {"Both subdomain and subpath", "both"}
+            ]}
+          />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Controls how users can access this site
+          </p>
+        </div>
+        <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+          <p class="font-medium">Access URLs:</p>
+          <p class="font-mono text-indigo-600 dark:text-indigo-400">
+            Subdomain: https://{subdomain_preview(@form[:subdomain].value)}
+          </p>
+          <p class="font-mono text-indigo-600 dark:text-indigo-400">
+            Subpath: https://nabaleague.com/site/{subdomain_value(@form[:subdomain].value)}
+          </p>
+        </div>
         <div class="flex gap-2">
           <.button variant="success" type="submit">
             {@submit_label}
@@ -237,9 +258,21 @@ defmodule UploadWeb.Admin.SitesLive do
             error={@site.last_deployment_error}
           />
         </div>
-        <p class="text-sm text-indigo-600 dark:text-indigo-400 font-mono">
-          https://{Upload.Sites.Site.full_domain(@site)}
-        </p>
+        <div class="text-sm space-y-1">
+          <%= if @site.routing_mode in ["subdomain", "both"] do %>
+            <p class="text-indigo-600 dark:text-indigo-400 font-mono">
+              https://{Upload.Sites.Site.full_domain(@site)}
+            </p>
+          <% end %>
+          <%= if @site.routing_mode in ["subpath", "both"] do %>
+            <p class="text-indigo-600 dark:text-indigo-400 font-mono">
+              https://{@site.base_domain}{Upload.Sites.Site.subpath(@site)}
+            </p>
+          <% end %>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Mode: {@site.routing_mode}
+          </p>
+        </div>
       </div>
       <div class="flex gap-2">
         <.button variant="primary" size="sm" phx-click="edit_site" phx-value-site-id={@site.id}>
@@ -262,4 +295,8 @@ defmodule UploadWeb.Admin.SitesLive do
   defp subdomain_preview(nil), do: "subdomain.nabaleague.com"
   defp subdomain_preview(""), do: "subdomain.nabaleague.com"
   defp subdomain_preview(subdomain), do: "#{subdomain}.nabaleague.com"
+
+  defp subdomain_value(nil), do: "subdomain"
+  defp subdomain_value(""), do: "subdomain"
+  defp subdomain_value(subdomain), do: subdomain
 end

@@ -1,21 +1,18 @@
 defmodule Upload.Workers.DeploymentWorker do
   @moduledoc """
-  Oban worker for asynchronous deployment of sites to Cloudflare Workers.
+  Oban worker for asynchronous deployment of sites to local storage.
 
   This worker is queued after a file upload and handles the entire deployment
-  process, including status updates and error handling.
+  process by extracting the tarball to priv/static/sites/{subdomain}/ and
+  validating the extracted files.
   """
 
-  use Oban.Worker, queue: :deployments, max_attempts: 3
+  use Oban.Worker, queue: :deployments, max_attempts: 1
 
   require Logger
 
   alias Upload.Sites
-  alias Upload.Sites.Site
-
-  defp cloudflare_deployer do
-    Application.get_env(:upload, :cloudflare_deployer, Upload.Deployer.Cloudflare)
-  end
+  alias Upload.Deployer.TarExtractor
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"site_id" => site_id, "tarball_path" => tarball_path}}) do
@@ -26,15 +23,8 @@ defmodule Upload.Workers.DeploymentWorker do
     # Mark as deploying
     {:ok, site} = Sites.mark_deploying(site)
 
-    # Ensure worker name is set
-    worker_name = Site.worker_name(site)
-
-    if is_nil(site.cloudflare_worker_name) do
-      Sites.set_worker_name(site, worker_name)
-    end
-
-    case cloudflare_deployer().deploy(site, tarball_path) do
-      {:ok, _site} ->
+    case deploy_to_local(site, tarball_path) do
+      :ok ->
         Sites.mark_deployed(site)
         cleanup_tarball(tarball_path)
         Logger.info(deployment_worker_success: site_id)
@@ -42,8 +32,9 @@ defmodule Upload.Workers.DeploymentWorker do
 
       {:error, reason} ->
         Logger.error(deployment_worker_failed: site_id, reason: reason)
-        Task.start(fn -> Sites.mark_deployment_failed(site, reason) end)
-        handle_deployment_error(reason, tarball_path)
+        Sites.mark_deployment_failed(site, reason)
+        cleanup_tarball(tarball_path)
+        {:cancel, reason}
     end
   end
 
@@ -52,58 +43,50 @@ defmodule Upload.Workers.DeploymentWorker do
     {:error, :invalid_args}
   end
 
-  # Non-retryable errors - cancel the job and clean up
-  defp handle_deployment_error(:missing_cloudflare_config, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, :missing_cloudflare_config}
+  defp deploy_to_local(site, tarball_path) do
+    # Determine target directory for this site
+    site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+
+    # Clean up existing site directory before extraction
+    if File.exists?(site_dir) do
+      Logger.info(cleaning_existing_site_directory: site_dir)
+      File.rm_rf!(site_dir)
+    end
+
+    # Extract tarball to site directory
+    case TarExtractor.extract(tarball_path, site_dir) do
+      {:ok, _extract_dir} ->
+        # Validate at least one HTML file exists
+        case validate_html_files(site_dir) do
+          :ok ->
+            :ok
+
+          {:error, _reason} = error ->
+            # Clean up extraction since validation failed
+            File.rm_rf(site_dir)
+            error
+        end
+
+      {:error, _reason} = error ->
+        # Clean up partial extraction on failure
+        File.rm_rf(site_dir)
+        error
+    end
   end
 
-  defp handle_deployment_error(:no_valid_files, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, :no_valid_files}
-  end
+  defp validate_html_files(site_dir) do
+    # Recursively find all HTML files
+    html_files =
+      site_dir
+      |> Path.join("**/*.{html,htm}")
+      |> Path.wildcard()
 
-  defp handle_deployment_error({:extraction_failed, _} = reason, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  defp handle_deployment_error({:path_traversal_detected, _} = reason, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  # File/archive errors are non-retryable
-  defp handle_deployment_error({:file_stat_failed, _} = reason, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  defp handle_deployment_error({:file_too_large, _, _} = reason, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  defp handle_deployment_error({:decompressed_too_large, _, _} = reason, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  defp handle_deployment_error({:gzip_decompression_failed, _} = reason, tarball_path) do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  # Cloudflare API errors (4xx/5xx) should not be retried
-  defp handle_deployment_error({:api_error, status, _body} = reason, tarball_path)
-       when status >= 400 and status < 600 do
-    cleanup_tarball(tarball_path)
-    {:cancel, reason}
-  end
-
-  # Retryable errors - let Oban retry
-  defp handle_deployment_error(reason, _tarball_path) do
-    {:error, reason}
+    if Enum.empty?(html_files) do
+      {:error, :no_html_files}
+    else
+      Logger.info(html_files_found: length(html_files))
+      :ok
+    end
   end
 
   defp cleanup_tarball(tarball_path) do

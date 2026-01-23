@@ -59,5 +59,6 @@ defmodule UploadWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  plug UploadWeb.Plugs.SubdomainRouter
   plug UploadWeb.Router
 end

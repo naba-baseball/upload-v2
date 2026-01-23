@@ -12,11 +12,22 @@ defmodule Upload.Sites do
     Repo.all(Site)
   end
 
+  def site_dir(%Site{} = site),
+    do: Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+
   @doc """
   Gets a single site.
   Raises if the site is not found.
   """
   def get_site!(id), do: Repo.get!(Site, id)
+
+  @doc """
+  Gets a site by subdomain.
+  Returns nil if the site is not found.
+  """
+  def get_site_by_subdomain(subdomain) do
+    Repo.get_by(Site, subdomain: subdomain)
+  end
 
   @doc """
   Creates a site.
@@ -41,6 +52,9 @@ defmodule Upload.Sites do
   """
   def delete_site(%Site{} = site) do
     Repo.delete(site)
+    # remove site from sites directory
+    site_dir(site)
+    |> File.rm_rf!()
   end
 
   @doc """
@@ -190,37 +204,8 @@ defmodule Upload.Sites do
     "Failed to write extracted files: insufficient disk space or permission denied"
   end
 
-  def format_deployment_error(:missing_cloudflare_config) do
-    "Deployment service is not configured. Please contact an administrator."
-  end
-
-  def format_deployment_error({:api_error, 401, _}) do
-    "Authentication failed with deployment service. Please contact an administrator."
-  end
-
-  def format_deployment_error({:api_error, 403, _}) do
-    "Permission denied by deployment service. Please contact an administrator."
-  end
-
-  def format_deployment_error({:api_error, status, _}) when status >= 500 do
-    "Deployment service temporarily unavailable (#{status}). Will retry automatically."
-  end
-
-  def format_deployment_error({:api_error, status, body}) do
-    message = extract_api_error_message(body)
-    "Deployment failed (#{status}): #{message}"
-  end
-
-  def format_deployment_error({:request_failed, %{reason: reason}}) do
-    "Network error during deployment: #{friendly_error_reason(reason)}"
-  end
-
-  def format_deployment_error({:request_failed, reason}) do
-    "Network error during deployment: #{friendly_error_reason(reason)}"
-  end
-
-  def format_deployment_error(:no_valid_files) do
-    "Archive contained no valid site files (HTML, CSS, JS, images, etc.)"
+  def format_deployment_error(:no_html_files) do
+    "Archive must contain at least one HTML file (index.html or *.html)"
   end
 
   def format_deployment_error({:path_traversal_detected, _path}) do
@@ -237,16 +222,6 @@ defmodule Upload.Sites do
     "Deployment failed: unknown error"
   end
 
-  # Convert common error reasons to user-friendly messages
-  defp friendly_error_reason(:econnrefused), do: "connection refused (service unavailable)"
-  defp friendly_error_reason(:timeout), do: "connection timeout"
-  defp friendly_error_reason(:nxdomain), do: "DNS resolution failed"
-  defp friendly_error_reason(reason), do: "#{inspect(reason)}"
-
-  defp extract_api_error_message(%{"errors" => [%{"message" => message} | _]}), do: message
-  defp extract_api_error_message(%{"error" => message}) when is_binary(message), do: message
-  defp extract_api_error_message(body), do: inspect(body)
-
   defp format_bytes(bytes) when bytes >= 1_073_741_824 do
     "#{Float.round(bytes / 1_073_741_824, 1)} GB"
   end
@@ -257,12 +232,5 @@ defmodule Upload.Sites do
 
   defp format_bytes(bytes) do
     "#{bytes} bytes"
-  end
-
-  @doc """
-  Sets the worker name for a site.
-  """
-  def set_worker_name(%Site{} = site, worker_name) do
-    update_deployment_status(site, %{cloudflare_worker_name: worker_name})
   end
 end

@@ -124,6 +124,22 @@ defmodule Upload.Deployer.TarExtractorTest do
 
       assert {:error, {:path_traversal_detected, _}} = result
     end
+
+    test "filters out macOS resource fork files", %{tmp_dir: tmp_dir} do
+      # Create a tarball with both regular files and macOS resource fork files
+      tarball_path = create_macos_resource_fork_tarball(tmp_dir)
+      extract_dir = Path.join(tmp_dir, "extract")
+
+      assert {:ok, ^extract_dir} = TarExtractor.extract(tarball_path, extract_dir)
+
+      # Regular files should exist
+      assert File.exists?(Path.join(extract_dir, "index.html"))
+      assert File.exists?(Path.join([extract_dir, "images", "logo.png"]))
+
+      # Resource fork files should NOT be extracted
+      refute File.exists?(Path.join(extract_dir, "._index.html"))
+      refute File.exists?(Path.join([extract_dir, "images", "._logo.png"]))
+    end
   end
 
   # Helper to create a tarball from a map of filename => content
@@ -301,6 +317,110 @@ defmodule Upload.Deployer.TarExtractorTest do
     File.write!(output_path, gz_data)
 
     output_path
+  end
+
+  # Helper to create a tarball with macOS resource fork files
+  defp create_macos_resource_fork_tarball(tmp_dir) do
+    # Create a tarball with both regular files and resource fork files
+    # Resource fork files start with ._
+    files = [
+      {"index.html", "<html>Homepage</html>"},
+      {"._index.html", create_appledouble_content()},
+      {"images/logo.png", "logo content"},
+      {"images/._logo.png", create_appledouble_content()}
+    ]
+
+    tar_blocks =
+      Enum.flat_map(files, fn {filename, content} ->
+        [create_tar_header(filename, content), pad_to_block(content)]
+      end)
+
+    # Two empty blocks mark end of archive
+    end_marker = String.duplicate(<<0>>, 1024)
+
+    tar_data = Enum.join(tar_blocks) <> end_marker
+    gz_data = :zlib.gzip(tar_data)
+
+    tarball_path = Path.join(tmp_dir, "macos_#{:erlang.unique_integer([:positive])}.tar.gz")
+    File.write!(tarball_path, gz_data)
+
+    tarball_path
+  end
+
+  # Create AppleDouble resource fork content (simplified)
+  defp create_appledouble_content do
+    # AppleDouble files start with magic bytes 0x00 0x05 0x16 0x07
+    # followed by version and "Mac OS X        "
+    <<0x00, 0x05, 0x16, 0x07, 0x00, 0x02, 0x00, 0x00>> <>
+      "Mac OS X        " <>
+      # Minimal valid structure (rest doesn't matter for filtering test)
+      String.duplicate(<<0>>, 200)
+  end
+
+  # Create a tar header for a file
+  defp create_tar_header(filename, content) do
+    file_size = byte_size(content)
+
+    filename_field = String.pad_trailing(filename, 100, <<0>>)
+    mode_field = String.pad_trailing("0000644", 8, <<0>>)
+    uid_field = String.pad_trailing("0000000", 8, <<0>>)
+    gid_field = String.pad_trailing("0000000", 8, <<0>>)
+    size_octal = Integer.to_string(file_size, 8)
+    size_field = String.pad_leading(size_octal, 11, "0") <> " "
+    mtime_field = String.pad_trailing("14000000000", 12, <<0>>)
+    checksum_placeholder = "        "
+    typeflag = "0"
+    linkname_field = String.duplicate(<<0>>, 100)
+    ustar_magic = "ustar  "
+    ustar_version = <<0, 0>>
+    owner_field = String.duplicate(<<0>>, 32)
+    group_field = String.duplicate(<<0>>, 32)
+    devmajor_field = String.duplicate(<<0>>, 8)
+    devminor_field = String.duplicate(<<0>>, 8)
+    prefix_field = String.duplicate(<<0>>, 155)
+    padding_field = String.duplicate(<<0>>, 12)
+
+    header_without_checksum =
+      filename_field <>
+        mode_field <>
+        uid_field <>
+        gid_field <>
+        size_field <>
+        mtime_field <>
+        checksum_placeholder <>
+        typeflag <>
+        linkname_field <>
+        ustar_magic <>
+        ustar_version <>
+        owner_field <>
+        group_field <>
+        devmajor_field <>
+        devminor_field <>
+        prefix_field <>
+        padding_field
+
+    checksum =
+      header_without_checksum
+      |> :binary.bin_to_list()
+      |> Enum.sum()
+
+    checksum_str = String.pad_leading(Integer.to_string(checksum, 8), 6, "0") <> <<0, 32>>
+
+    binary_part(header_without_checksum, 0, 148) <>
+      checksum_str <>
+      binary_part(header_without_checksum, 156, 512 - 156)
+  end
+
+  # Pad content to 512-byte block boundary
+  defp pad_to_block(content) do
+    file_size = byte_size(content)
+
+    if rem(file_size, 512) == 0 do
+      content
+    else
+      padding_size = 512 - rem(file_size, 512)
+      content <> String.duplicate(<<0>>, padding_size)
+    end
   end
 
   # Helper to create a tarball with path traversal

@@ -27,11 +27,8 @@ config :ueberauth, Ueberauth.Strategy.Discord.OAuth,
   client_id: System.get_env("DISCORD_CLIENT_ID"),
   client_secret: System.get_env("DISCORD_CLIENT_SECRET")
 
-# Cloudflare configuration for static asset deployment
-config :upload, :cloudflare,
-  account_id: System.get_env("CLOUDFLARE_ACCOUNT_ID"),
-  api_token: System.get_env("CLOUDFLARE_API_TOKEN"),
-  zone_id: System.get_env("CLOUDFLARE_ZONE_ID")
+# Base domain for site hosting
+config :upload, :base_domain, System.get_env("BASE_DOMAIN", "nabaleague.com")
 
 if config_env() == :prod do
   database_url =
