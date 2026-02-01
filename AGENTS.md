@@ -1,6 +1,6 @@
 # Project Context
 
-This Codebase is for a project that hosts a simple portal for users to upload `.tar.gz` files containing html, js, and css files which will be deployed to a static site provider such as Cloudflare or Netlify, depending on the user's configuration.
+This Codebase is for a project that hosts a simple portal for users to upload `.tar.gz` files containing html, js, and css files which will be extracted and served by the application. 
 
 There is an Admin user who will update users' hosting provider configurations, so they don't need to ever see it.
 Users can setup webhook notifications for when their website is successfully hosted, or if something goes wrong.
