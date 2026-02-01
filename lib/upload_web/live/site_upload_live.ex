@@ -106,7 +106,7 @@ defmodule UploadWeb.SiteUploadLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="mx-auto max-w-2xl py-8 px-4">
         <div class="mb-6">
           <.back_link navigate={~p"/dashboard"}>Back to Dashboard</.back_link>
