@@ -1,6 +1,5 @@
 defmodule UploadWeb.Router do
   use UploadWeb, :router
-  import Oban.Web.Router
   import UploadWeb.UserAuth
 
   pipeline :browser do
@@ -68,12 +67,6 @@ defmodule UploadWeb.Router do
 
       live_dashboard "/dashboard", metrics: UploadWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
-    end
-
-    scope "/" do
-      pipe_through :browser
-
-      oban_dashboard("/oban")
     end
   end
 end

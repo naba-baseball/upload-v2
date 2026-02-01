@@ -42,3 +42,9 @@ npm-debug.log
 # ignore extracted sites
 priv/static/sites/*
 !priv/static/sites/.gitkeep
+
+# SQLite database files
+/priv/repo/*.db
+/priv/repo/*.db-journal
+/priv/repo/*.db-wal
+/priv/repo/*.db-shm

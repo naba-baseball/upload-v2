@@ -12,7 +12,7 @@ defmodule Upload.Application do
       Upload.Repo,
       {DNSCluster, query: Application.get_env(:upload, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Upload.PubSub},
-      {Oban, Application.fetch_env!(:upload, Oban)},
+      {Task.Supervisor, name: Upload.TaskSupervisor},
       # Start to serve requests, typically the last entry
       UploadWeb.Endpoint
     ]

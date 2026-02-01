@@ -1,22 +1,33 @@
-defmodule Upload.Workers.DeploymentWorker do
+defmodule Upload.DeploymentRunner do
   @moduledoc """
-  Oban worker for asynchronous deployment of sites to local storage.
+  Handles asynchronous deployment of sites to local storage.
 
-  This worker is queued after a file upload and handles the entire deployment
-  process by extracting the tarball to priv/static/sites/{subdomain}/ and
-  validating the extracted files.
+  This module runs deployments as supervised tasks, extracting uploaded
+  tarballs to the site's directory and validating the contents.
   """
-
-  use Oban.Worker, queue: :deployments, max_attempts: 1
 
   require Logger
 
   alias Upload.Sites
   alias Upload.Deployer.TarExtractor
 
-  @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"site_id" => site_id, "tarball_path" => tarball_path}}) do
-    Logger.info(deployment_worker_started: site_id, tarball_path: tarball_path)
+  @doc """
+  Starts a deployment task for the given site and tarball path.
+
+  The task is supervised and runs asynchronously.
+  """
+  def start_deployment(site_id, tarball_path) do
+    Task.Supervisor.start_child(
+      Upload.TaskSupervisor,
+      fn ->
+        run_deployment(site_id, tarball_path)
+      end,
+      restart: :transient
+    )
+  end
+
+  defp run_deployment(site_id, tarball_path) do
+    Logger.info(deployment_started: site_id, tarball_path: tarball_path)
 
     site = Sites.get_site!(site_id)
 
@@ -27,20 +38,13 @@ defmodule Upload.Workers.DeploymentWorker do
       :ok ->
         Sites.mark_deployed(site)
         cleanup_tarball(tarball_path)
-        Logger.info(deployment_worker_success: site_id)
-        :ok
+        Logger.info(deployment_success: site_id)
 
       {:error, reason} ->
-        Logger.error(deployment_worker_failed: site_id, reason: reason)
-        Sites.mark_deployment_failed(site, reason)
+        Logger.error(deployment_failed: site_id, reason: reason)
+        Sites.mark_deployment_failed(site, inspect(reason))
         cleanup_tarball(tarball_path)
-        {:cancel, reason}
     end
-  end
-
-  def perform(%Oban.Job{args: args}) do
-    Logger.error(invalid_deployment_args: args)
-    {:error, :invalid_args}
   end
 
   defp deploy_to_local(site, tarball_path) do

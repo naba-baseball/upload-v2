@@ -4,9 +4,9 @@ defmodule UploadWeb.DashboardLive do
   import UploadWeb.UploadComponents
 
   alias Upload.Accounts
+  alias Upload.DeploymentRunner
   alias Upload.FileValidator
   alias Upload.SiteUploader
-  alias Upload.Workers.DeploymentWorker
 
   require Logger
 
@@ -78,10 +78,8 @@ defmodule UploadWeb.DashboardLive do
           path: dest
         )
 
-        # Queue deployment job
-        %{site_id: site.id, tarball_path: dest}
-        |> DeploymentWorker.new()
-        |> Oban.insert()
+        # Start deployment task
+        DeploymentRunner.start_deployment(site.id, dest)
 
         {:noreply, put_flash(socket, :info, "Upload received! Deployment in progress...")}
     end
