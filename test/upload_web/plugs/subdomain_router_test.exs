@@ -149,11 +149,23 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
       assert conn.resp_body =~ "About"
     end
 
-    test "handles root path via subpath", %{both_site: _site} do
+    test "redirects root path to trailing slash via subpath", %{both_site: _site} do
       conn =
         build_conn()
         |> Map.put(:host, "localhost")
         |> Map.put(:request_path, "/sites/bothtest")
+        |> call_subdomain_router()
+
+      # Should redirect to trailing slash version for proper relative URL resolution
+      assert conn.status == 301
+      assert get_resp_header(conn, "location") == ["/sites/bothtest/"]
+    end
+
+    test "handles root path with trailing slash via subpath", %{both_site: _site} do
+      conn =
+        build_conn()
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/bothtest/")
         |> call_subdomain_router()
 
       assert conn.status == 200

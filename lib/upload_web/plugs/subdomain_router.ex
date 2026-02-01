@@ -159,7 +159,22 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
         {:ok, resolved_path} ->
           # Security check: ensure resolved path is within site directory
           if path_safe?(resolved_path, site_dir) do
-            serve_file(conn, resolved_path)
+            # For subpath routing, redirect to trailing slash if needed
+            # This ensures relative URLs in HTML resolve correctly
+            conn =
+              if routing_type == :subpath &&
+                   not String.ends_with?(conn.request_path, "/") &&
+                   (normalized_path == "/" or File.dir?(resolved_path)) do
+                redirect_to_trailing_slash(conn)
+              else
+                conn
+              end
+
+            if conn.halted do
+              conn
+            else
+              serve_file(conn, resolved_path)
+            end
           else
             Logger.warning("Path traversal attempt detected: #{path} for site #{site.subdomain}")
             send_404(conn)
@@ -242,6 +257,16 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
     |> put_resp_header("content-type", content_type)
     |> put_resp_header("cache-control", cache_control)
     |> send_file(200, file_path)
+    |> halt()
+  end
+
+  defp redirect_to_trailing_slash(conn) do
+    # Redirect to URL with trailing slash for proper relative URL resolution
+    redirect_path = conn.request_path <> "/"
+
+    conn
+    |> put_resp_header("location", redirect_path)
+    |> send_resp(301, "")
     |> halt()
   end
 
