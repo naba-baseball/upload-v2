@@ -32,10 +32,12 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
     Sites.mark_deployed(both_site)
 
     # Create site directories and index.html files
+    # Files are placed in news/html/ subdirectory to match OOTP23 format structure
     for site <- [subdomain_site, subpath_site, both_site] do
       site_dir = Sites.site_dir(site)
-      File.mkdir_p!(site_dir)
-      File.write!(Path.join(site_dir, "index.html"), "<h1>#{site.name}</h1>")
+      html_dir = Path.join([site_dir, "news", "html"])
+      File.mkdir_p!(html_dir)
+      File.write!(Path.join(html_dir, "index.html"), "<h1>#{site.name}</h1>")
     end
 
     on_exit(fn ->
@@ -131,9 +133,11 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
 
   describe "path normalization" do
     test "strips subpath prefix correctly", %{both_site: site} do
-      # Create a nested file
+      # Create a nested file in news/html/ directory to match OOTP23 format
       site_dir = Sites.site_dir(site)
-      File.write!(Path.join(site_dir, "about.html"), "<h1>About</h1>")
+      html_dir = Path.join([site_dir, "news", "html"])
+      File.mkdir_p!(html_dir)
+      File.write!(Path.join(html_dir, "about.html"), "<h1>About</h1>")
 
       conn =
         build_conn()

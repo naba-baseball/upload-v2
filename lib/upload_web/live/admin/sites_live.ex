@@ -226,6 +226,19 @@ defmodule UploadWeb.Admin.SitesLive do
             Controls how users can access this site
           </p>
         </div>
+        <div>
+          <.input
+            field={@form[:format_version]}
+            type="select"
+            label="OOTP Export Format"
+            options={[
+              {"OOTP 23+ (news/html structure)", "ootp23"}
+            ]}
+          />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            The format of the exported website files from OOTP
+          </p>
+        </div>
         <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
           <p class="font-medium">Access URLs:</p>
           <p>
@@ -278,7 +291,7 @@ defmodule UploadWeb.Admin.SitesLive do
         <div class="text-sm space-y-1">
           <.site_url_links site={@site} display="full_url" />
           <p class="text-xs text-gray-500 dark:text-gray-400">
-            Mode: {@site.routing_mode}
+            Mode: {@site.routing_mode} | Format: {@site.format_version}
           </p>
         </div>
       </div>

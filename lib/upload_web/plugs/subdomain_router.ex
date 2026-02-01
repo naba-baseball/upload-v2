@@ -9,6 +9,8 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
   import Plug.Conn
   require Logger
 
+  alias Upload.Deployer.FormatRouter
+
   @behaviour Plug
 
   def init(opts), do: opts
@@ -144,10 +146,14 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
         end
 
       normalized_path = normalize_path(path)
+
+      # Apply format routing rules (e.g., prepend news/html for OOTP23 format)
+      routed_path = FormatRouter.route_path(site.format_version, normalized_path)
+
       site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
 
       # Try to serve the requested file or fall back to index.html patterns
-      file_path = resolve_file_path(site_dir, normalized_path)
+      file_path = resolve_file_path(site_dir, routed_path)
 
       case file_path do
         {:ok, resolved_path} ->

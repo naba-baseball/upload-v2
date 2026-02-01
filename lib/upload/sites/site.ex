@@ -4,11 +4,13 @@ defmodule Upload.Sites.Site do
 
   @deployment_statuses ~w(pending deploying deployed failed)
   @routing_modes ~w(subdomain subpath both)
+  @format_versions ~w(ootp23)
 
   schema "sites" do
     field :name, :string
     field :subdomain, :string
     field :routing_mode, :string, default: "subdomain"
+    field :format_version, :string, default: "ootp23"
 
     # Deployment fields
     field :deployment_status, :string, default: "pending"
@@ -23,13 +25,14 @@ defmodule Upload.Sites.Site do
   @doc false
   def changeset(site, attrs) do
     site
-    |> cast(attrs, [:name, :subdomain, :routing_mode])
+    |> cast(attrs, [:name, :subdomain, :routing_mode, :format_version])
     |> validate_required([:name, :subdomain])
     |> validate_format(:subdomain, ~r/^[a-z0-9-]+$/,
       message: "must contain only lowercase letters, numbers, and hyphens"
     )
     |> validate_length(:subdomain, min: 1, max: 63)
     |> validate_inclusion(:routing_mode, @routing_modes)
+    |> validate_inclusion(:format_version, @format_versions)
     |> unique_constraint(:subdomain)
   end
 
@@ -97,7 +100,7 @@ defmodule Upload.Sites.Site do
   def url_scheme do
     base_domain = Application.get_env(:upload, :base_domain)
 
-    if String.starts_with?(base_domain ,"localhost") do
+    if String.starts_with?(base_domain, "localhost") do
       "http://"
     else
       "https://"
