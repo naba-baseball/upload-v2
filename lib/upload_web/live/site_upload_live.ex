@@ -124,10 +124,9 @@ defmodule UploadWeb.SiteUploadLive do
                 error={@site.last_deployment_error}
               />
             </div>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              <.icon name="hero-globe-alt" class="w-4 h-4 inline" />
-              {Upload.Sites.Site.full_domain(@site)}
-            </p>
+            <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <.site_url_links site={@site} icon="hero-globe-alt" />
+            </div>
           </div>
 
           <p class="mb-6 text-gray-600 dark:text-gray-400">

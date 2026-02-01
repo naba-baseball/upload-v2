@@ -44,21 +44,12 @@ defmodule Upload.SitesTest do
     test "creates a site with valid attributes" do
       attrs = %{
         name: "Test Site",
-        subdomain: "testsite",
-        base_domain: "example.com"
+        subdomain: "testsite"
       }
 
       assert {:ok, site} = Sites.create_site(attrs)
       assert site.name == "Test Site"
       assert site.subdomain == "testsite"
-      assert site.base_domain == "example.com"
-    end
-
-    test "uses default base_domain if not provided" do
-      attrs = %{name: "Test Site", subdomain: "testsite"}
-
-      assert {:ok, site} = Sites.create_site(attrs)
-      assert site.base_domain == "nabaleague.com"
     end
 
     test "returns error with invalid subdomain format" do

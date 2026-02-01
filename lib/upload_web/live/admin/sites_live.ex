@@ -9,6 +9,7 @@ defmodule UploadWeb.Admin.SitesLive do
   @impl true
   def mount(_params, _session, socket) do
     sites = Sites.list_sites()
+    base_domain = Application.get_env(:upload, :base_domain)
 
     {:ok,
      socket
@@ -16,6 +17,7 @@ defmodule UploadWeb.Admin.SitesLive do
      |> assign(:editing_site_id, nil)
      |> assign(:site_form, nil)
      |> assign(:sites, sites)
+     |> assign(:base_domain, base_domain)
      |> stream(:sites, sites)}
   end
 
@@ -173,9 +175,10 @@ defmodule UploadWeb.Admin.SitesLive do
               form={@site_form}
               id={"edit-site-form-#{site.id}"}
               submit_label="Save"
+              base_domain={@base_domain}
             />
           <% else %>
-            <.site_display site={site} />
+            <.site_display site={site} base_domain={@base_domain} />
           <% end %>
         </.card>
       </div>
@@ -187,6 +190,7 @@ defmodule UploadWeb.Admin.SitesLive do
             form={@site_form}
             id="new-site-form"
             submit_label="Create Site"
+            base_domain={@base_domain}
           />
         </.card>
       <% end %>
@@ -224,11 +228,25 @@ defmodule UploadWeb.Admin.SitesLive do
         </div>
         <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
           <p class="font-medium">Access URLs:</p>
-          <p class="font-mono text-indigo-600 dark:text-indigo-400">
-            Subdomain: https://{subdomain_preview(@form[:subdomain].value)}
+          <p>
+            <span class="text-gray-500 dark:text-gray-400">Subdomain:</span>
+            <.link
+              href={"#{Site.url_scheme()}#{subdomain_preview(@form[:subdomain].value, @base_domain)}"}
+              target="_blank"
+              class="font-mono text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline"
+            >
+              {Site.url_scheme()}{subdomain_preview(@form[:subdomain].value, @base_domain)}
+            </.link>
           </p>
-          <p class="font-mono text-indigo-600 dark:text-indigo-400">
-            Subpath: https://nabaleague.com/site/{subdomain_value(@form[:subdomain].value)}
+          <p>
+            <span class="text-gray-500 dark:text-gray-400">Subpath:</span>
+            <.link
+              href={"#{Site.url_scheme()}#{@base_domain}/sites/#{subdomain_value(@form[:subdomain].value)}"}
+              target="_blank"
+              class="font-mono text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline"
+            >
+              {Site.url_scheme()}{@base_domain}/sites/{subdomain_value(@form[:subdomain].value)}
+            </.link>
           </p>
         </div>
         <div class="flex gap-2">
@@ -258,16 +276,7 @@ defmodule UploadWeb.Admin.SitesLive do
           />
         </div>
         <div class="text-sm space-y-1">
-          <%= if @site.routing_mode in ["subdomain", "both"] do %>
-            <p class="text-indigo-600 dark:text-indigo-400 font-mono">
-              https://{Upload.Sites.Site.full_domain(@site)}
-            </p>
-          <% end %>
-          <%= if @site.routing_mode in ["subpath", "both"] do %>
-            <p class="text-indigo-600 dark:text-indigo-400 font-mono">
-              https://{@site.base_domain}{Upload.Sites.Site.subpath(@site)}
-            </p>
-          <% end %>
+          <.site_url_links site={@site} display="full_url" />
           <p class="text-xs text-gray-500 dark:text-gray-400">
             Mode: {@site.routing_mode}
           </p>
@@ -300,9 +309,9 @@ defmodule UploadWeb.Admin.SitesLive do
     """
   end
 
-  defp subdomain_preview(nil), do: "subdomain.nabaleague.com"
-  defp subdomain_preview(""), do: "subdomain.nabaleague.com"
-  defp subdomain_preview(subdomain), do: "#{subdomain}.nabaleague.com"
+  defp subdomain_preview(nil, base_domain), do: "subdomain.#{base_domain}"
+  defp subdomain_preview("", base_domain), do: "subdomain.#{base_domain}"
+  defp subdomain_preview(subdomain, base_domain), do: "#{subdomain}.#{base_domain}"
 
   defp subdomain_value(nil), do: "subdomain"
   defp subdomain_value(""), do: "subdomain"

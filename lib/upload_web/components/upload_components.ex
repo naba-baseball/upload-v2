@@ -151,4 +151,90 @@ defmodule UploadWeb.UploadComponents do
   defp format_time(datetime) do
     Calendar.strftime(datetime, "%b %d, %H:%M")
   end
+
+  @doc """
+  Renders site URL links based on the routing mode.
+
+  ## Examples
+
+      <.site_url_links site={@site} />
+      <.site_url_links site={site} icon="hero-arrow-top-right-on-square" />
+      <.site_url_links site={@site} display="full_url" />
+
+  """
+  attr :site, :map, required: true
+  attr :icon, :string, default: nil, doc: "Optional icon name to display before each link"
+
+  attr :display, :string,
+    default: "domain",
+    doc: "Display mode: 'domain' for domain/subpath, 'full_url' for complete URL"
+
+  def site_url_links(assigns) do
+    ~H"""
+    <div class="space-y-1">
+      <%= if @site.routing_mode in ["subdomain", "subpath"] do %>
+        <.link
+          href={Upload.Sites.Site.format_site_url(@site)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class={[
+            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
+            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
+          ]}
+        >
+          <%= if @icon do %>
+            <.icon name={@icon} class="w-4 h-4" />
+          <% end %>
+          <%= if @display == "full_url" do %>
+            {Upload.Sites.Site.format_site_url(@site)}
+          <% else %>
+            <%= if @site.routing_mode == "subdomain" do %>
+              {Upload.Sites.Site.full_domain(@site)}
+            <% else %>
+              {Upload.Sites.Site.subpath(@site)}
+            <% end %>
+          <% end %>
+        </.link>
+      <% end %>
+      <%= if @site.routing_mode == "both" do %>
+        <.link
+          href={Upload.Sites.Site.format_site_url(@site, :subdomain)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class={[
+            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
+            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
+          ]}
+        >
+          <%= if @icon do %>
+            <.icon name={@icon} class="w-4 h-4" />
+          <% end %>
+          <%= if @display == "full_url" do %>
+            {Upload.Sites.Site.format_site_url(@site, :subdomain)}
+          <% else %>
+            {Upload.Sites.Site.full_domain(@site)}
+          <% end %>
+        </.link>
+        <.link
+          href={Upload.Sites.Site.format_site_url(@site, :subpath)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class={[
+            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
+            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
+          ]}
+        >
+          <%= if @icon do %>
+            <.icon name={@icon} class="w-4 h-4" />
+          <% end %>
+          <%= if @display == "full_url" do %>
+            {Upload.Sites.Site.format_site_url(@site, :subpath)}
+          <% else %>
+            {Upload.Sites.Site.subpath(@site)}
+          <% end %>
+        </.link>
+      <% end %>
+    </div>
+    """
+  end
 end

@@ -54,8 +54,9 @@ defmodule UploadWeb.SiteUploadLiveTest do
 
     test "displays site domain", %{conn: conn, site: site} do
       {:ok, _view, html} = live(conn, ~p"/sites/#{site.id}/upload")
+      base_domain = Application.get_env(:upload, :base_domain)
 
-      assert html =~ "testsite.nabaleague.com"
+      assert html =~ "testsite.#{base_domain}"
     end
 
     test "displays back to dashboard link", %{conn: conn, site: site} do

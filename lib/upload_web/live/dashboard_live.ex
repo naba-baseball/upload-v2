@@ -149,15 +149,9 @@ defmodule UploadWeb.DashboardLive do
                 error={@single_site.last_deployment_error}
               />
             </div>
-            <a
-              href={"https://#{Upload.Sites.Site.full_domain(@single_site)}"}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-mono text-sm"
-            >
-              <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-              {Upload.Sites.Site.full_domain(@single_site)}
-            </a>
+            <div class="space-y-1">
+              <.site_url_links site={@single_site} icon="hero-arrow-top-right-on-square" />
+            </div>
           </div>
 
           <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -187,15 +181,7 @@ defmodule UploadWeb.DashboardLive do
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <a
-                    href={"https://#{Upload.Sites.Site.full_domain(site)}"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-mono text-sm"
-                  >
-                    <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-                    {Upload.Sites.Site.full_domain(site)}
-                  </a>
+                  <.site_url_links site={site} icon="hero-arrow-top-right-on-square" />
                   <.link
                     navigate={~p"/sites/#{site.id}/upload"}
                     class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"

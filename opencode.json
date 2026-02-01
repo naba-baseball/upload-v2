@@ -3,7 +3,16 @@
     "tidewave": {
       "type": "remote",
       "url": "http://localhost:$PORT/tidewave/mcp",
-      "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "deno",
+        "x",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--auto-connect"
+      ]
     }
   },
   "$schema": "https://opencode.ai/config.json"

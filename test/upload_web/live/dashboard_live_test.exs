@@ -67,13 +67,14 @@ defmodule UploadWeb.DashboardLiveTest do
       user = user_fixture()
       site = site_fixture(%{name: "Test Site", subdomain: "testsite"})
       assign_user_to_site(user, site)
+      base_domain = Application.get_env(:upload, :base_domain)
 
       conn = init_test_session(conn, %{user_id: user.id})
 
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
       assert html =~ "Test Site"
-      assert html =~ "testsite.nabaleague.com"
+      assert html =~ "testsite.#{base_domain}"
     end
 
     test "shows empty state when user has no sites", %{conn: conn} do

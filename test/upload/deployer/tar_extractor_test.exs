@@ -351,9 +351,9 @@ defmodule Upload.Deployer.TarExtractorTest do
   defp create_appledouble_content do
     # AppleDouble files start with magic bytes 0x00 0x05 0x16 0x07
     # followed by version and "Mac OS X        "
+    # Minimal valid structure (rest doesn't matter for filtering test)
     <<0x00, 0x05, 0x16, 0x07, 0x00, 0x02, 0x00, 0x00>> <>
       "Mac OS X        " <>
-      # Minimal valid structure (rest doesn't matter for filtering test)
       String.duplicate(<<0>>, 200)
   end
 

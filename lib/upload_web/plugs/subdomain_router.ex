@@ -2,7 +2,7 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
   @moduledoc """
   Routes subdomain requests to serve static site files.
 
-  Intercepts requests to subdomains (e.g., mysite.nabaleague.com or mysite.localhost)
+  Intercepts requests to subdomains (e.g., mysite.example.com or mysite.localhost)
   and serves static files from priv/static/sites/{subdomain}/.
   """
 
@@ -43,9 +43,9 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
   end
 
   defp extract_subpath(conn) do
-    # Match /site/{subdomain} and extract subdomain
+    # Match /sites/{subdomain} and extract subdomain
     case String.split(conn.request_path, "/", parts: 4) do
-      ["", "site", subdomain | _] when subdomain != "" ->
+      ["", "sites", subdomain | _] when subdomain != "" ->
         # Validate subdomain format (same as schema validation)
         if subdomain =~ ~r/^[a-z0-9-]+$/ do
           {:ok, subdomain}
@@ -82,7 +82,7 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
 
   defp extract_subdomain(conn) do
     host = get_host(conn)
-    base_domain = Application.get_env(:upload, :base_domain, "nabaleague.com")
+    base_domain = Application.get_env(:upload, :base_domain)
 
     cond do
       # Development: subdomain.localhost
@@ -95,7 +95,7 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
           subdomain -> subdomain
         end
 
-      # Production: subdomain.nabaleague.com
+      # Production: subdomain.base_domain
       String.ends_with?(host, ".#{base_domain}") ->
         host
         |> String.replace_suffix(".#{base_domain}", "")
@@ -112,16 +112,22 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
   end
 
   defp get_host(conn) do
-    case get_req_header(conn, "host") do
-      [host | _] ->
-        # Remove port if present
-        host
-        |> String.split(":")
-        |> List.first()
+    # First check conn.host (set directly on conn struct, used in tests)
+    # Then fall back to the host header
+    host =
+      if conn.host && conn.host != "" do
+        conn.host
+      else
+        case get_req_header(conn, "host") do
+          [header_host | _] -> header_host
+          _ -> ""
+        end
+      end
 
-      _ ->
-        ""
-    end
+    # Remove port if present
+    host
+    |> String.split(":")
+    |> List.first()
   end
 
   defp serve_site_file(conn, site, routing_type) do
@@ -163,7 +169,7 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
   end
 
   defp strip_subpath_prefix(path, subdomain) do
-    prefix = "/site/#{subdomain}"
+    prefix = "/sites/#{subdomain}"
 
     case String.split(path, prefix, parts: 2) do
       [_, remaining] ->

@@ -16,8 +16,7 @@ defmodule Upload.SitesFixtures do
     attrs =
       Enum.into(attrs, %{
         name: "Test Site #{unique_num}",
-        subdomain: "testsite#{unique_num}",
-        base_domain: "nabaleague.com"
+        subdomain: "testsite#{unique_num}"
       })
 
     {:ok, site} = Sites.create_site(attrs)

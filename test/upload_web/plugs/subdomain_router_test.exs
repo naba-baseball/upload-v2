@@ -1,6 +1,7 @@
 defmodule UploadWeb.Plugs.SubdomainRouterTest do
   use UploadWeb.ConnCase
   alias Upload.Sites
+  alias UploadWeb.Plugs.SubdomainRouter
 
   setup do
     # Create test sites with different routing modes
@@ -51,12 +52,18 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
     }
   end
 
+  # Helper function to call the SubdomainRouter plug directly
+  defp call_subdomain_router(conn) do
+    SubdomainRouter.call(conn, [])
+  end
+
   describe "subdomain routing" do
-    test "serves site when mode is subdomain", %{subdomain_site: site} do
+    test "serves site when mode is subdomain", %{subdomain_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "subtest.localhost")
-        |> get("/")
+        |> Map.put(:host, "subtest.localhost")
+        |> Map.put(:request_path, "/")
+        |> call_subdomain_router()
 
       assert conn.status == 200
       assert conn.resp_body =~ "Subdomain Site"
@@ -65,20 +72,22 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
     test "does not serve via subpath when mode is subdomain", %{subdomain_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/subtest/")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/subtest/")
+        |> call_subdomain_router()
 
-      # Should pass through to normal routing (404)
+      # Should pass through to normal routing (not halted)
       refute conn.halted
     end
   end
 
   describe "subpath routing" do
-    test "serves site when mode is subpath", %{subpath_site: site} do
+    test "serves site when mode is subpath", %{subpath_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/pathtest/")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/pathtest/")
+        |> call_subdomain_router()
 
       assert conn.status == 200
       assert conn.resp_body =~ "Subpath Site"
@@ -87,30 +96,33 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
     test "does not serve via subdomain when mode is subpath", %{subpath_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "pathtest.localhost")
-        |> get("/")
+        |> Map.put(:host, "pathtest.localhost")
+        |> Map.put(:request_path, "/")
+        |> call_subdomain_router()
 
-      # Should pass through to normal routing (404)
+      # Should pass through to normal routing (not halted)
       refute conn.halted
     end
   end
 
   describe "both routing mode" do
-    test "serves site via subdomain", %{both_site: site} do
+    test "serves site via subdomain", %{both_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "bothtest.localhost")
-        |> get("/")
+        |> Map.put(:host, "bothtest.localhost")
+        |> Map.put(:request_path, "/")
+        |> call_subdomain_router()
 
       assert conn.status == 200
       assert conn.resp_body =~ "Both Site"
     end
 
-    test "serves site via subpath", %{both_site: site} do
+    test "serves site via subpath", %{both_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/bothtest/")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/bothtest/")
+        |> call_subdomain_router()
 
       assert conn.status == 200
       assert conn.resp_body =~ "Both Site"
@@ -125,18 +137,20 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
 
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/bothtest/about.html")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/bothtest/about.html")
+        |> call_subdomain_router()
 
       assert conn.status == 200
       assert conn.resp_body =~ "About"
     end
 
-    test "handles root path via subpath", %{both_site: site} do
+    test "handles root path via subpath", %{both_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/bothtest")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/bothtest")
+        |> call_subdomain_router()
 
       assert conn.status == 200
       assert conn.resp_body =~ "Both Site"
@@ -147,10 +161,11 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
     test "rejects invalid subdomain format in subpath", %{both_site: _site} do
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/invalid_subdomain/")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/invalid_subdomain/")
+        |> call_subdomain_router()
 
-      # Should pass through (invalid format)
+      # Should pass through (invalid format, not halted)
       refute conn.halted
     end
 
@@ -170,16 +185,18 @@ defmodule UploadWeb.Plugs.SubdomainRouterTest do
       # Try subdomain
       conn =
         build_conn()
-        |> put_req_header("host", "pending.localhost")
-        |> get("/")
+        |> Map.put(:host, "pending.localhost")
+        |> Map.put(:request_path, "/")
+        |> call_subdomain_router()
 
       refute conn.halted
 
       # Try subpath
       conn =
         build_conn()
-        |> put_req_header("host", "localhost")
-        |> get("/site/pending/")
+        |> Map.put(:host, "localhost")
+        |> Map.put(:request_path, "/sites/pending/")
+        |> call_subdomain_router()
 
       refute conn.halted
 

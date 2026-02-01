@@ -14,8 +14,7 @@ defmodule Upload.SiteUploaderTest do
     site = %Site{
       id: 1,
       name: "Test Site",
-      subdomain: "test-site",
-      base_domain: "example.com"
+      subdomain: "test-site"
     }
 
     on_exit(fn ->

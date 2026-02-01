@@ -51,10 +51,12 @@ defmodule Upload.Sites do
   Deletes a site.
   """
   def delete_site(%Site{} = site) do
-    Repo.delete(site)
+    result = Repo.delete(site)
     # remove site from sites directory
     site_dir(site)
     |> File.rm_rf!()
+
+    result
   end
 
   @doc """

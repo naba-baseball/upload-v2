@@ -30,7 +30,7 @@ We call it OOTP 23 because thats the earliest game version I've seen this format
 
 ## Requirements
 
-We need a "router" for each format, or some kind of routing rules. For our Known Format 1, it should route `ebc.nabaleague.com` to `news/html/index.html`. Essentially, it should prepend `news/html` onto every request when searching the file system.
+We need a "router" for each format, or some kind of routing rules. For our Known Format 1, it should route `ebc.nabaleague.com` (if BASE_DOMAIN is nabaleague.com) to `news/html/index.html`. Essentially, it should prepend `news/html` onto every request when searching the file system.
 
 This should be inserted into our routing layer.
 

@@ -8,7 +8,6 @@ defmodule Upload.Sites.Site do
   schema "sites" do
     field :name, :string
     field :subdomain, :string
-    field :base_domain, :string, default: "nabaleague.com"
     field :routing_mode, :string, default: "subdomain"
 
     # Deployment fields
@@ -24,7 +23,7 @@ defmodule Upload.Sites.Site do
   @doc false
   def changeset(site, attrs) do
     site
-    |> cast(attrs, [:name, :subdomain, :base_domain, :routing_mode])
+    |> cast(attrs, [:name, :subdomain, :routing_mode])
     |> validate_required([:name, :subdomain])
     |> validate_format(:subdomain, ~r/^[a-z0-9-]+$/,
       message: "must contain only lowercase letters, numbers, and hyphens"
@@ -50,7 +49,8 @@ defmodule Upload.Sites.Site do
   @doc """
   Returns the full domain for this site.
   """
-  def full_domain(%__MODULE__{subdomain: subdomain, base_domain: base_domain}) do
+  def full_domain(%__MODULE__{subdomain: subdomain}) do
+    base_domain = Application.get_env(:upload, :base_domain)
     "#{subdomain}.#{base_domain}"
   end
 
@@ -58,6 +58,49 @@ defmodule Upload.Sites.Site do
   Returns the subpath for this site.
   """
   def subpath(%__MODULE__{subdomain: subdomain}) do
-    "/site/#{subdomain}"
+    "/sites/#{subdomain}"
+  end
+
+  @doc """
+  Returns a formatted URL for the site based on the specified format.
+  Uses http:// for localhost domains, https:// otherwise.
+
+  ## Examples
+
+      iex> format_site_url(site, :subdomain)
+      "https://mysite.example.com"
+
+      iex> format_site_url(site, :subpath)
+      "https://example.com/sites/mysite"
+
+  """
+  def format_site_url(%__MODULE__{} = site, :subdomain) do
+    "#{url_scheme()}#{full_domain(site)}"
+  end
+
+  def format_site_url(%__MODULE__{} = site, :subpath) do
+    base_domain = Application.get_env(:upload, :base_domain)
+    "#{url_scheme()}#{base_domain}#{subpath(site)}"
+  end
+
+  def format_site_url(%__MODULE__{} = site) do
+    case site.routing_mode do
+      "subpath" -> format_site_url(site, :subpath)
+      "subdomain" -> format_site_url(site, :subdomain)
+    end
+  end
+
+  @doc """
+  Returns the URL scheme based on the base domain.
+  Returns "http://" for localhost, "https://" otherwise.
+  """
+  def url_scheme do
+    base_domain = Application.get_env(:upload, :base_domain)
+
+    if String.starts_with?(base_domain ,"localhost") do
+      "http://"
+    else
+      "https://"
+    end
   end
 end
