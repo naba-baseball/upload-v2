@@ -255,7 +255,6 @@ defmodule UploadWeb.Admin.SitesLive do
           <.deployment_status
             status={@site.deployment_status}
             last_deployed_at={@site.last_deployed_at}
-            error={@site.last_deployment_error}
           />
         </div>
         <div class="text-sm space-y-1">
@@ -289,6 +288,15 @@ defmodule UploadWeb.Admin.SitesLive do
         </.button>
       </div>
     </div>
+
+    <%= if @site.deployment_status == "failed" && @site.last_deployment_error do %>
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded px-3 py-2">
+          <p class="font-semibold mb-1">Deployment Error:</p>
+          <p class="font-mono whitespace-pre-wrap break-all">{@site.last_deployment_error}</p>
+        </div>
+      </div>
+    <% end %>
     """
   end
 

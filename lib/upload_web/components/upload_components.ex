@@ -116,15 +116,6 @@ defmodule UploadWeb.UploadComponents do
           {format_time(@last_deployed_at)}
         </span>
       <% end %>
-
-      <%= if @status == "failed" && @error do %>
-        <span
-          class="text-xs text-red-600 dark:text-red-400 truncate max-w-[200px]"
-          title={@error}
-        >
-          {@error}
-        </span>
-      <% end %>
     </div>
     """
   end
