@@ -112,7 +112,12 @@ defmodule UploadWeb.UploadComponents do
       </span>
 
       <%= if @status == "deployed" && @last_deployed_at do %>
-        <span class="text-xs text-base-content/70">
+        <span
+          id={"deployment-time-#{@last_deployed_at}"}
+          phx-hook="LocalTime"
+          data-timestamp={@last_deployed_at}
+          class="text-xs text-base-content/70"
+        >
           {format_time(@last_deployed_at)}
         </span>
       <% end %>
@@ -148,8 +153,8 @@ defmodule UploadWeb.UploadComponents do
 
   defp format_time(nil), do: ""
 
-  defp format_time(datetime) do
-    Calendar.strftime(datetime, "%b %d, %H:%M")
+  defp format_time(_datetime) do
+    ""
   end
 
   @doc """

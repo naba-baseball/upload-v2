@@ -26,10 +26,36 @@ import {hooks as colocatedHooks} from "phoenix-colocated/upload"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+const Hooks = {
+  ...colocatedHooks,
+  LocalTime: {
+    mounted() {
+      this.updated();
+    },
+    updated() {
+      const timestamp = this.el.dataset.timestamp;
+      if (timestamp) {
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) return;
+
+        const label = this.el.dataset.label ? `${this.el.dataset.label}: ` : "";
+        this.el.innerText = label + date.toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true
+        });
+      }
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: Hooks,
 })
 
 // Show progress bar on live navigation and form submits

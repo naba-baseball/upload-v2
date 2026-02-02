@@ -356,11 +356,12 @@ defmodule UploadWeb.SiteWebhooksLive do
                   <%= if webhook.last_triggered_at do %>
                     <div class="flex items-center gap-2">
                       <.icon name="hero-clock" class="w-4 h-4" />
-                      <span>
-                        Last triggered: {Calendar.strftime(
-                          webhook.last_triggered_at,
-                          "%Y-%m-%d %H:%M UTC"
-                        )}
+                      <span
+                        id={"webhook-trigger-#{webhook.id}"}
+                        phx-hook="LocalTime"
+                        data-timestamp={webhook.last_triggered_at}
+                        data-label="Last triggered"
+                      >
                       </span>
                     </div>
                   <% end %>
