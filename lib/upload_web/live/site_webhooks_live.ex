@@ -174,7 +174,7 @@ defmodule UploadWeb.SiteWebhooksLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div >
+    <div>
       <div class="vintage-ornament mb-6">
         <div class="vintage-ornament-diamond"></div>
       </div>
