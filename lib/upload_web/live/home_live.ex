@@ -33,7 +33,7 @@ defmodule UploadWeb.HomeLive do
             <div class="vintage-ornament mb-6">
               <div class="vintage-ornament-diamond"></div>
             </div>
-            <h1 class="font-display text-4xl sm:text-5xl text-primary mb-2">
+            <h1 class="font-display text-4xl sm:text-5xl mb-2">
               OOTP Sites
             </h1>
             <p class="font-body text-secondary text-lg">
@@ -48,9 +48,9 @@ defmodule UploadWeb.HomeLive do
             <%!-- Vintage Empty State --%>
             <div class="vintage-card text-center py-16 px-8">
               <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
-                <.icon name="hero-globe-alt" class="w-10 h-10 text-primary" />
+                <.icon name="hero-globe-alt" class="w-10 h-10" />
               </div>
-              <h3 class="font-display text-2xl mb-3 text-primary">No Sites Yet</h3>
+              <h3 class="font-display text-2xl mb-3">No Sites Yet</h3>
               <p class="font-body text-secondary text-lg max-w-md mx-auto">
                 No sites deployed yet. Check back soon!
               </p>
@@ -60,10 +60,10 @@ defmodule UploadWeb.HomeLive do
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
               <div
                 :for={site <- @sites}
-                class="vintage-card card-hover corner-decoration p-6"
+                class="vintage-card card-hover p-6"
               >
                 <div class="mb-4">
-                  <h3 class="font-display text-xl text-primary mb-2">
+                  <h3 class="font-display text-xl mb-2">
                     {site.name}
                   </h3>
                   <div class="h-1 w-16 bg-accent rounded-full"></div>

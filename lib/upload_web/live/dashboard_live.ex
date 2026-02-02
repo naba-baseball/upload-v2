@@ -187,7 +187,7 @@ defmodule UploadWeb.DashboardLive do
               </div>
             </div>
 
-            <div class="vintage-card card-hover corner-decoration bg-gradient-to-br from-base-100 to-base-200">
+            <div class="vintage-card card-hover bg-gradient-to-br from-base-100 to-base-200">
               <div class="p-8">
                 <div class="text-center mb-6">
                   <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">

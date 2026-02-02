@@ -414,37 +414,6 @@
     transform: rotate(45deg);
   }
 
-  /* Corner Decorations */
-  .corner-decoration {
-    position: relative;
-  }
-
-  .corner-decoration::before,
-  .corner-decoration::after {
-    content: '';
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--color-accent);
-    border-radius: 0.25rem;
-  }
-
-  .corner-decoration::before {
-    top: -2px;
-    left: -2px;
-    border-right: none;
-    border-bottom: none;
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .corner-decoration::after {
-    bottom: -2px;
-    right: -2px;
-    border-left: none;
-    border-top: none;
-    box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.1);
-  }
-
   /* Dropcap Typography */
   .dropcap::first-letter {
     font-family: var(--font-display);

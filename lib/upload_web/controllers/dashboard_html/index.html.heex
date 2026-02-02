@@ -112,7 +112,7 @@
       <%!-- Admin Action (if applicable) --%>
       <%= if @current_user.role == "admin" do %>
         <.link navigate={~p"/admin/sites"} class="group">
-          <div class="vintage-card corner-decoration p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full border-warning">
+          <div class="vintage-card p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full border-warning">
             <div class="flex items-start gap-4">
               <div class="w-14 h-14 rounded-full bg-warning/20 flex items-center justify-center border-2 border-warning group-hover:bg-warning transition-colors">
                 <.icon

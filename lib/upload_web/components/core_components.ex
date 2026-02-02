@@ -200,7 +200,7 @@ defmodule UploadWeb.CoreComponents do
       "default" => "vintage-card shadow-lg",
       "indigo" => "vintage-card bg-primary border-primary text-primary-content shadow-xl",
       "white" => "vintage-card bg-base-100 shadow-md border-primary/30",
-      "bordered" => "vintage-card corner-decoration border-4 border-primary/50 shadow-lg"
+      "bordered" => "vintage-card border-4 border-primary/50 shadow-lg"
     }
 
     hover_classes =

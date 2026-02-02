@@ -377,6 +377,7 @@ This project uses a distinctive **1920s vintage baseball aesthetic** to create a
 - Modern flat designs (prefer vintage depth and texture)
 - DaisyUI defaults directly (always customize for baseball theme)
 - **Never combine `font-display` with `font-bold`**. The `font-display` class already includes appropriate font-weight styling through the font-family definition. Adding `font-bold` creates visual inconsistency and is redundant.
+- **Never** utilize `text-primary` when the text will be on a non-colored background (like cream paper or stadium night). `text-primary` should only be used for contrast on secondary or accent backgrounds.
 
 #### 🔧 Customization
 When adding new components, follow this pattern:
