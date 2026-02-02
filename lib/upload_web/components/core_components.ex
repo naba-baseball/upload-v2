@@ -76,7 +76,7 @@ defmodule UploadWeb.CoreComponents do
           class="size-5 shrink-0 text-error"
         />
         <div class="font-body">
-          <p :if={@title} class="font-heading font-bold">{@title}</p>
+          <p :if={@title} class="font-display">{@title}</p>
           <p class="text-sm">{msg}</p>
         </div>
         <div class="flex-1" />
@@ -126,7 +126,7 @@ defmodule UploadWeb.CoreComponents do
 
   def button(%{rest: rest} = assigns) do
     base_classes =
-      "vintage-btn font-heading inline-flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      "vintage-btn font-display inline-flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 
     size_classes = %{
       "default" => "px-6 py-3 text-base",
@@ -518,7 +518,7 @@ defmodule UploadWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-4">
       <label>
-        <span :if={@label} class="label mb-2 font-heading font-bold text-base-content">{@label}</span>
+        <span :if={@label} class="label mb-2 font-display text-base-content">{@label}</span>
         <input
           type={@type}
           name={@name}

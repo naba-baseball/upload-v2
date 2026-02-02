@@ -141,7 +141,7 @@ defmodule UploadWeb.SiteUploadLive do
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
                   <.icon name="hero-cloud-arrow-up" class="w-8 h-8" />
                 </div>
-                <h1 class="font-heading text-3xl font-bold mb-2">
+                <h1 class="font-display text-3xl mb-2">
                   Upload to {@site.name}
                 </h1>
                 <div class="flex items-center justify-center gap-4 text-sm text-secondary">

@@ -10,7 +10,7 @@
         NABA Upload
       </h1>
 
-      <p class="font-heading text-xl sm:text-2xl text-secondary italic">
+      <p class="font-display text-xl sm:text-2xl text-secondary italic">
         America's Pastime, Digitally Preserved
       </p>
 
@@ -33,7 +33,7 @@
               />
             <% end %>
             <div class="text-left">
-              <p class="font-heading text-lg font-bold text-base-content">Welcome back,</p>
+              <p class="font-display text-lg text-base-content">Welcome back,</p>
               <p class="font-display text-2xl">{@current_user.name}</p>
               <p class="font-body text-sm text-neutral mt-1">
                 {if @current_user.role == "admin", do: "Team Manager", else: "Player"}
@@ -49,7 +49,7 @@
             class="vintage-btn vintage-btn-primary w-full sm:w-auto"
           >
             <.icon name="hero-squares-2x2" class="w-5 h-5 mr-2" />
-            <span class="font-heading">Visit Clubhouse</span>
+            <span class="font-display">Visit Clubhouse</span>
           </.link>
 
           <%= if @current_user.role == "admin" do %>
@@ -58,7 +58,7 @@
               class="vintage-btn vintage-btn-secondary w-full sm:w-auto"
             >
               <.icon name="hero-shield-check" class="w-5 h-5 mr-2" />
-              <span class="font-heading">Manager's Office</span>
+              <span class="font-display">Manager's Office</span>
             </.link>
           <% end %>
         </div>
@@ -80,19 +80,19 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="vintage-card p-4 text-center">
             <.icon name="hero-cloud-arrow-up" class="w-8 h-8 mx-auto mb-2" />
-            <h3 class="font-heading font-bold text-base-content">Easy Uploads</h3>
+            <h3 class="font-display text-base-content">Easy Uploads</h3>
             <p class="font-body text-sm text-neutral">Drag and drop your files</p>
           </div>
 
           <div class="vintage-card p-4 text-center">
             <.icon name="hero-bell-alert" class="w-8 h-8 text-secondary mx-auto mb-2" />
-            <h3 class="font-heading font-bold text-base-content">Notifications</h3>
+            <h3 class="font-display text-base-content">Notifications</h3>
             <p class="font-body text-sm text-neutral">Stay in the loop</p>
           </div>
 
           <div class="vintage-card p-4 text-center">
             <.icon name="hero-lock-closed" class="w-8 h-8 text-accent mx-auto mb-2" />
-            <h3 class="font-heading font-bold text-base-content">Secure</h3>
+            <h3 class="font-display text-base-content">Secure</h3>
             <p class="font-body text-sm text-neutral">Your files are safe</p>
           </div>
         </div>
@@ -108,7 +108,7 @@
             class="vintage-btn vintage-btn-primary inline-flex items-center px-8 py-4 text-lg"
           >
             <.icon name="hero-user-circle" class="w-6 h-6 mr-3" />
-            <span class="font-heading">Sign in with Discord</span>
+            <span class="font-display">Sign in with Discord</span>
           </.link>
         </div>
       </div>

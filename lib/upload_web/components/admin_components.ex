@@ -88,7 +88,7 @@ defmodule UploadWeb.AdminComponents do
     <.link
       navigate={@navigate}
       class={[
-        "px-4 py-2 font-heading font-semibold transition-colors",
+        "px-4 py-2 font-display font-semibold transition-colors",
         if(@active,
           do: "border-b-2 border-primary dark:border-primary",
           else: "text-secondary dark:text-secondary hover:text-primary dark:hover:text-primary"

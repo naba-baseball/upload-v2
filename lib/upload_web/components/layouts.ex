@@ -78,7 +78,7 @@ defmodule UploadWeb.Layouts do
               <span class="font-display text-xl sm:text-2xl tracking-wide leading-none">
                 NABA
               </span>
-              <span class="font-heading text-xs sm:text-sm text-neutral tracking-widest uppercase">
+              <span class="font-display text-xs sm:text-sm text-neutral tracking-widest uppercase">
                 Upload Portal
               </span>
             </div>
@@ -108,7 +108,7 @@ defmodule UploadWeb.Layouts do
                     />
                   <% end %>
                   <div class="flex flex-col text-right">
-                    <span class="font-heading text-sm font-bold text-base-content leading-tight">
+                    <span class="font-display text-sm text-base-content leading-tight">
                       {@current_user.name}
                     </span>
                     <span class="text-xs text-neutral uppercase tracking-wider">
@@ -145,7 +145,7 @@ defmodule UploadWeb.Layouts do
                 class="vintage-btn vintage-btn-primary btn-sm px-6"
               >
                 <.icon name="hero-user-circle" class="w-4 h-4 mr-2" />
-                <span class="font-heading">Enter Ballpark</span>
+                <span class="font-display">Enter Ballpark</span>
               </a>
             <% end %>
           </div>
@@ -168,7 +168,7 @@ defmodule UploadWeb.Layouts do
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-2 text-neutral">
             <.icon name="hero-trophy" class="w-5 h-5 text-accent" />
-            <span class="font-heading text-sm">Est. 1920</span>
+            <span class="font-display text-sm">Est. 1920</span>
           </div>
           <div class="vintage-ornament w-full sm:w-auto">
             <div class="vintage-ornament-diamond"></div>

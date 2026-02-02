@@ -278,7 +278,7 @@ This project uses a distinctive **1920s vintage baseball aesthetic** to create a
 
 ##### Button System  
 - **Style**: 3D pressable buttons like vintage baseball memorabilia
-- **Typography**: Uppercase, letter-spaced, font-heading family
+- **Typography**: Uppercase, letter-spaced, font-display family
 - **States**: Pressed state with shadow depth changes
 - **Variants**: Primary (navy), secondary (crimson), ghost (transparent)
 
@@ -314,7 +314,7 @@ This project uses a distinctive **1920s vintage baseball aesthetic** to create a
 <h1 class="font-display text-4xl text-primary">NABA Upload</h1>
 
 # Section headings  
-<h2 class="font-heading text-2xl text-secondary">The Clubhouse</h2>
+<h2 class="font-display text-2xl text-secondary">The Clubhouse</h2>
 
 # Body content
 <p class="font-body text-base-content">Your content here</p>
@@ -366,7 +366,7 @@ This project uses a distinctive **1920s vintage baseball aesthetic** to create a
 - Vintage card classes for content containers
 - Baseball-stitch borders for authentic feel
 - Paper texture overlay for aged appearance
-- Font-heading for secondary headings
+- font-display for secondary headings
 - Font-display for primary headings
 - Font-body for paragraph content
 
@@ -376,6 +376,7 @@ This project uses a distinctive **1920s vintage baseball aesthetic** to create a
 - System fonts (use specified vintage fonts)
 - Modern flat designs (prefer vintage depth and texture)
 - DaisyUI defaults directly (always customize for baseball theme)
+- **Never combine `font-display` with `font-bold`**. The `font-display` class already includes appropriate font-weight styling through the font-family definition. Adding `font-bold` creates visual inconsistency and is redundant.
 
 #### 🔧 Customization
 When adding new components, follow this pattern:

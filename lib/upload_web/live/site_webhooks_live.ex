@@ -180,7 +180,7 @@ defmodule UploadWeb.SiteWebhooksLive do
           <div class="vintage-ornament-diamond"></div>
         </div>
         <div class="text-center">
-          <h1 class="font-display text-3xl font-bold mb-2">
+          <h1 class="font-display text-3xl mb-2">
             {@site.name} Webhooks
           </h1>
           <p class="text-secondary">
@@ -218,7 +218,7 @@ defmodule UploadWeb.SiteWebhooksLive do
         <div class="vintage-ornament mb-4">
           <div class="vintage-ornament-diamond"></div>
         </div>
-        <h2 class="font-heading text-2xl font-bold text-center mb-2">
+        <h2 class="font-display text-2xl text-center mb-2">
           {if @webhook.id, do: "Edit Webhook", else: "New Webhook"}
         </h2>
       </div>
@@ -270,7 +270,7 @@ defmodule UploadWeb.SiteWebhooksLive do
           </div>
 
           <div>
-            <span class="label font-heading font-bold text-base-content">Events</span>
+            <span class="label font-display text-base-content">Events</span>
             <div class="space-y-2 mt-2">
               <label class="flex items-center gap-2">
                 <input
@@ -327,7 +327,7 @@ defmodule UploadWeb.SiteWebhooksLive do
             <div class="inline-flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
               <.icon name="hero-bell-alert" class="w-5 h-5" />
             </div>
-            <h2 class="font-heading text-xl font-bold">
+            <h2 class="font-display text-xl">
               Configured Webhooks
             </h2>
           </div>
@@ -342,7 +342,7 @@ defmodule UploadWeb.SiteWebhooksLive do
           <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
             <.icon name="hero-bell-slash" class="w-10 h-10" />
           </div>
-          <h3 class="font-heading text-2xl font-bold mb-4">No Webhooks Yet</h3>
+          <h3 class="font-display text-2xl mb-4">No Webhooks Yet</h3>
           <p class="text-secondary max-w-md mx-auto">
             No webhooks configured. Add a webhook to receive deployment notifications.
           </p>
@@ -353,7 +353,7 @@ defmodule UploadWeb.SiteWebhooksLive do
             :for={webhook <- @webhooks}
             variant="default"
             hover
-            class="relative !overflow-visible"
+            class="relative overflow-hidden"
           >
             <div class="flex items-start justify-between">
               <div class="flex-1 min-w-0">
@@ -367,10 +367,10 @@ defmodule UploadWeb.SiteWebhooksLive do
                     </div>
                   </div>
                   <div class="flex-1">
-                    <h3 class="font-heading text-lg font-bold mb-1">
+                    <h3 class="font-display text-lg mb-1">
                       {webhook.description || webhook.url}
                     </h3>
-                    <p class="text-sm text-secondary font-mono truncate">
+                    <p class="text-sm text-secondary font-body break-all">
                       {webhook.url}
                     </p>
                   </div>

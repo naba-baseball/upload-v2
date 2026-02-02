@@ -151,7 +151,7 @@ defmodule UploadWeb.DashboardLive do
               <div class="p-8 pb-0">
                 <div class="flex items-center justify-between mb-6">
                   <div>
-                    <h2 class="font-heading text-3xl font-bold mb-2">
+                    <h2 class="font-display text-3xl mb-2">
                       {@single_site.name}
                     </h2>
                     <div class="flex items-center gap-4 text-sm text-secondary">
@@ -174,7 +174,7 @@ defmodule UploadWeb.DashboardLive do
 
               <div class="p-8 pt-4">
                 <div class="flex items-center justify-between mb-6">
-                  <h3 class="font-heading text-xl">Quick Actions</h3>
+                  <h3 class="font-display text-xl">Quick Actions</h3>
                 </div>
                 <div class="flex flex-wrap gap-4">
                   <.link
@@ -193,7 +193,7 @@ defmodule UploadWeb.DashboardLive do
                   <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
                     <.icon name="hero-cloud-arrow-up" class="w-8 h-8" />
                   </div>
-                  <h3 class="font-heading text-2xl font-bold mb-2">
+                  <h3 class="font-display text-2xl mb-2">
                     Upload Site Archive
                   </h3>
                   <p class="text-secondary">
@@ -211,7 +211,7 @@ defmodule UploadWeb.DashboardLive do
             <div class="vintage-ornament mb-6">
               <div class="vintage-ornament-diamond"></div>
             </div>
-            <h2 class="font-heading text-3xl font-bold text-center mb-8">Your Sites</h2>
+            <h2 class="font-display text-3xl text-center mb-8">Your Sites</h2>
           </div>
 
           <%= if @sites != [] do %>
@@ -237,7 +237,7 @@ defmodule UploadWeb.DashboardLive do
                 <div class="mb-6">
                   <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
-                      <h3 class="font-heading text-xl font-bold mb-2 group-hover:text-accent transition-colors">
+                      <h3 class="font-display text-xl mb-2 group-hover:text-accent transition-colors">
                         {site.name}
                       </h3>
                       <div class="h-1 w-16 bg-accent rounded-full"></div>
@@ -272,7 +272,7 @@ defmodule UploadWeb.DashboardLive do
               <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
                 <.icon name="hero-inbox" class="w-10 h-10" />
               </div>
-              <h3 class="font-heading text-2xl font-bold mb-4">No Sites Yet</h3>
+              <h3 class="font-display text-2xl mb-4">No Sites Yet</h3>
               <p class="text-secondary max-w-md mx-auto">
                 You haven't been assigned to any sites yet. Please contact an administrator to get access.
               </p>
@@ -285,7 +285,7 @@ defmodule UploadWeb.DashboardLive do
             <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <.icon name="hero-user" class="w-6 h-6" />
             </div>
-            <h2 class="font-heading text-2xl font-bold">Account Information</h2>
+            <h2 class="font-display text-2xl">Account Information</h2>
           </div>
           <.user_profile user={@current_user} />
         </div>
