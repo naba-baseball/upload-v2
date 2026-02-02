@@ -173,9 +173,6 @@ defmodule UploadWeb.Layouts do
           <div class="vintage-ornament w-full sm:w-auto">
             <div class="vintage-ornament-diamond"></div>
           </div>
-          <p class="font-body text-sm text-neutral italic">
-            "America's Pastime, Digitally Preserved"
-          </p>
         </div>
       </div>
     </footer>
