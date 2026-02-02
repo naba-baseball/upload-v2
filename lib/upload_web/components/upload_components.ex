@@ -178,7 +178,7 @@ defmodule UploadWeb.UploadComponents do
           target="_blank"
           rel="noopener noreferrer"
           class={[
-            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
+            "text-info font-mono hover:underline",
             if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
           ]}
         >

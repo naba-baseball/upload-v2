@@ -131,7 +131,7 @@ defmodule UploadWeb.DashboardLiveTest do
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
       assert html =~ "Admin Access"
-      assert html =~ "Go to Admin Panel"
+      assert html =~ "Admin Panel"
     end
 
     test "does not show admin banner for regular users", %{conn: conn} do

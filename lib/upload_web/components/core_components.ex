@@ -197,33 +197,40 @@ defmodule UploadWeb.CoreComponents do
 
   def card(assigns) do
     variant_classes = %{
-      "default" => "vintage-card baseball-stitches",
-      "indigo" => "vintage-card bg-primary border-primary text-primary-content",
-      "white" => "vintage-card bg-base-100",
-      "bordered" => "vintage-card baseball-stitches corner-decoration border-4"
+      "default" => "vintage-card baseball-stitches shadow-lg",
+      "indigo" => "vintage-card bg-primary border-primary text-primary-content shadow-xl",
+      "white" => "vintage-card bg-base-100 shadow-md border-primary/30",
+      "bordered" => "vintage-card corner-decoration border-4 border-primary/50 shadow-lg"
     }
 
     hover_classes =
       if assigns.hover do
-        "hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        "hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 ease-out"
       else
-        nil
+        "transition-shadow duration-300"
       end
 
     assigns =
       assign(assigns, :computed_class, [
         Map.fetch!(variant_classes, assigns.variant),
         hover_classes,
-        assigns.class
+        assigns.class,
+        "p-4"
       ])
 
     ~H"""
     <div id={@id} class={@computed_class} {@rest}>
-      <div :if={@header != []} class="mb-6 border-b-2 border-primary/20 pb-4">
+      <div :if={@header != []} class="mb-6 relative">
+        <div class="vintage-ornament mb-4">
+          <div class="vintage-ornament-diamond"></div>
+        </div>
         {render_slot(@header)}
       </div>
       {render_slot(@inner_block)}
-      <div :if={@footer != []} class="mt-6 border-t-2 border-primary/20 pt-4">
+      <div :if={@footer != []} class="mt-6 relative">
+        <div class="vintage-ornament mb-4">
+          <div class="vintage-ornament-diamond"></div>
+        </div>
         {render_slot(@footer)}
       </div>
     </div>
