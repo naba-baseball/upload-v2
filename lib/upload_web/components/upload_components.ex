@@ -112,7 +112,7 @@ defmodule UploadWeb.UploadComponents do
       </span>
 
       <%= if @status == "deployed" && @last_deployed_at do %>
-        <span class="text-xs text-gray-500 dark:text-gray-400">
+        <span class="text-xs text-base-content/70">
           {format_time(@last_deployed_at)}
         </span>
       <% end %>

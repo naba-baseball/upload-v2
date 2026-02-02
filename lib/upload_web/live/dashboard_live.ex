@@ -222,7 +222,12 @@ defmodule UploadWeb.DashboardLive do
                 hover
                 class="relative !overflow-visible"
               >
-                <div class="pe-2.5 vintage-surface rounded-full w-fit self-center -mt-7 mx-auto">
+                <div class={[
+                  "vintage-surface rounded-full w-fit self-center -mt-7 mx-auto",
+                  if site.last_deployed_at do
+                    "pe-2.5"
+                  end
+                ]}>
                   <.deployment_status
                     status={site.deployment_status}
                     last_deployed_at={site.last_deployed_at}
