@@ -139,42 +139,23 @@ defmodule UploadWeb.SiteWebhooksLive do
   end
 
   @impl true
-  def handle_event("test_webhook", _params, socket) do
-    # Build a temporary webhook struct from form data for testing
-    form = socket.assigns.form
+  def handle_event("test_webhook", %{"id" => id}, socket) do
+    webhook = Webhooks.get_webhook!(id)
 
-    url = form[:url].value
-    role_mention = parse_role_mention(form[:role_mention].value)
-    events = form[:events].value || []
+    socket = assign(socket, :testing_webhook_id, id)
 
-    # Validate URL is present
-    if is_nil(url) || url == "" do
-      {:noreply,
-       socket
-       |> put_flash(:error, "Please enter a webhook URL to test")
-       |> assign(:test_result, %{success: false, error: "Webhook URL is required"})}
-    else
-      temp_webhook = %SiteWebhook{
-        url: url,
-        role_mention: role_mention,
-        events: events
-      }
+    case Webhooks.test_webhook(webhook, socket.assigns.site) do
+      {:ok, status, body} ->
+        {:noreply,
+         socket
+         |> assign(:testing_webhook_id, nil)
+         |> assign(:test_result, %{webhook_id: id, success: true, status: status, body: body})}
 
-      socket = assign(socket, :testing_webhook, true)
-
-      case Webhooks.test_webhook(temp_webhook, socket.assigns.site) do
-        {:ok, status, body} ->
-          {:noreply,
-           socket
-           |> assign(:testing_webhook, false)
-           |> assign(:test_result, %{success: true, status: status, body: body})}
-
-        {:error, reason} ->
-          {:noreply,
-           socket
-           |> assign(:testing_webhook, false)
-           |> assign(:test_result, %{success: false, error: reason})}
-      end
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> assign(:testing_webhook_id, nil)
+         |> assign(:test_result, %{webhook_id: id, success: false, error: reason})}
     end
   end
 
@@ -242,7 +223,7 @@ defmodule UploadWeb.SiteWebhooksLive do
             For Discord, copy the webhook URL from:
           </p>
           <ol class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            <li> (hover over a channel) Edit channel > Integrations > Webhooks </li>
+            <li>(hover over a channel) Edit channel > Integrations > Webhooks</li>
           </ol>
         </div>
 
@@ -374,9 +355,82 @@ defmodule UploadWeb.SiteWebhooksLive do
                     <% end %>
                   </div>
                 <% end %>
+
+                <%= if @test_result && @test_result.webhook_id == webhook.id do %>
+                  <div class={[
+                    "mt-3 p-3 rounded text-sm border",
+                    if(@test_result.success,
+                      do: "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800",
+                      else: "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
+                    )
+                  ]}>
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <div class={[
+                          "font-medium mb-1",
+                          if(@test_result.success,
+                            do: "text-green-800 dark:text-green-200",
+                            else: "text-red-800 dark:text-red-200"
+                          )
+                        ]}>
+                          <%= if @test_result.success do %>
+                            Test Successful - Status {@test_result.status}
+                          <% else %>
+                            Test Failed
+                          <% end %>
+                        </div>
+                        <%= if @test_result.success && @test_result.body do %>
+                          <pre class="text-xs overflow-x-auto whitespace-pre-wrap font-mono bg-white dark:bg-gray-800 p-2 rounded opacity-75"><%= @test_result.body %></pre>
+                        <% end %>
+                        <%= if !@test_result.success do %>
+                          <p class="text-xs text-red-700 dark:text-red-300">{@test_result.error}</p>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
               </div>
 
               <div class="flex items-center gap-2 ml-4">
+                <%= if @test_result && @test_result.webhook_id == webhook.id do %>
+                  <button
+                    type="button"
+                    phx-click="clear_test_result"
+                    class={[
+                      "px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
+                      if(@test_result.success,
+                        do: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+                        else: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                      )
+                    ]}
+                  >
+                    <%= if @test_result.success do %>
+                      <span class="flex items-center gap-1">
+                        <.icon name="hero-check" class="w-4 h-4" /> Test OK
+                      </span>
+                    <% else %>
+                      <span class="flex items-center gap-1">
+                        <.icon name="hero-x-mark" class="w-4 h-4" /> Failed
+                      </span>
+                    <% end %>
+                  </button>
+                <% end %>
+                <%= if @testing_webhook_id == webhook.id do %>
+                  <span class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400">
+                    <span class="inline-block w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin">
+                    </span>
+                    Testing...
+                  </span>
+                <% else %>
+                  <button
+                    phx-click="test_webhook"
+                    phx-value-id={webhook.id}
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    <.icon name="hero-bolt" class="w-4 h-4" />
+                    <span>Test</span>
+                  </button>
+                <% end %>
                 <button
                   phx-click="toggle"
                   phx-value-id={webhook.id}
