@@ -117,6 +117,18 @@ defmodule UploadWeb.Layouts do
                   </div>
                 </div>
 
+                <%!-- Admin Panel Button (only for admins) --%>
+                <%= if @current_user.role == "admin" do %>
+                  <a
+                    href={~p"/admin/sites"}
+                    class="vintage-btn vintage-btn-primary btn-sm px-4"
+                    title="Admin Panel"
+                  >
+                    <.icon name="hero-shield-check" class="w-4 h-4 sm:mr-2" />
+                    <span class="hidden sm:inline">Admin</span>
+                  </a>
+                <% end %>
+
                 <%!-- Sign Out Button --%>
                 <a
                   href={~p"/auth/signout"}

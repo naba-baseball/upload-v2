@@ -144,27 +144,6 @@ defmodule UploadWeb.DashboardLive do
           <p class="text-gray-600 dark:text-gray-400">Your personal dashboard</p>
         </div>
 
-        <%= if @current_user.role == "admin" do %>
-          <div class="mb-8 vintage-card bg-gradient-to-r from-primary to-secondary p-6 transform hover:scale-[1.02] transition-transform duration-300">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-primary-content/20 rounded-full flex items-center justify-center">
-                  <.icon name="hero-shield-check" class="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 class="font-heading text-xl font-bold">Admin Access</h3>
-                  <p class="text-sm">
-                    Manage sites, users, and uploads
-                  </p>
-                </div>
-              </div>
-              <.button variant="secondary" navigate={~p"/admin/sites"} class="vintage-btn">
-                Admin Panel
-              </.button>
-            </div>
-          </div>
-        <% end %>
-
         <%= if @single_site do %>
           <%!-- Single site: show streamlined layout --%>
           <div class="space-y-8">
@@ -208,7 +187,7 @@ defmodule UploadWeb.DashboardLive do
               </div>
             </div>
 
-            <div class="vintage-card baseball-stitches corner-decoration bg-gradient-to-br from-base-100 to-base-200">
+            <div class="vintage-card card-hover baseball-stitches corner-decoration bg-gradient-to-br from-base-100 to-base-200">
               <div class="p-8">
                 <div class="text-center mb-6">
                   <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">

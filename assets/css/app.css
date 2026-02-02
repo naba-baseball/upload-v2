@@ -291,7 +291,6 @@ body {
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(2px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .vintage-card::before {
@@ -466,8 +465,12 @@ body {
   animation: stitch-pulse 3s ease-in-out infinite;
 }
 
-/* Enhanced card hover animations */
-.vintage-card:hover {
+/* Optional card hover animations */
+.vintage-card.card-hover {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.vintage-card.card-hover:hover {
   box-shadow: 
     0 20px 40px -10px rgba(0, 0, 0, 0.2),
     0 10px 20px -5px rgba(0, 0, 0, 0.12),
@@ -475,7 +478,7 @@ body {
   transform: translateY(-4px) scale(1.02);
 }
 
-.vintage-card:hover::before {
+.vintage-card.card-hover:hover::before {
   opacity: 0.9;
 }
 

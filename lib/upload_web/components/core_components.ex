@@ -205,9 +205,9 @@ defmodule UploadWeb.CoreComponents do
 
     hover_classes =
       if assigns.hover do
-        "hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 ease-out"
+        "card-hover"
       else
-        "transition-shadow duration-300"
+        nil
       end
 
     assigns =
