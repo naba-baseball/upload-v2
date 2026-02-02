@@ -2,7 +2,7 @@
   "mcp": {
     "tidewave": {
       "type": "remote",
-      "url": "http://localhost:$PORT/tidewave/mcp",
+      "url": "http://localhost:4000/tidewave/mcp",
     },
     "chrome-devtools": {
       "type": "local",
