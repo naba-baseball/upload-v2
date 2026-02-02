@@ -148,25 +148,37 @@ defmodule Upload.Sites do
   Marks a site as successfully deployed.
   """
   def mark_deployed(%Site{} = site) do
-    site
-    |> update_deployment_status(%{
-      deployment_status: "deployed",
-      last_deployed_at: DateTime.utc_now(),
-      last_deployment_error: nil
-    })
-    |> broadcast_deployment_update()
+    result =
+      site
+      |> update_deployment_status(%{
+        deployment_status: "deployed",
+        last_deployed_at: DateTime.utc_now(),
+        last_deployment_error: nil
+      })
+      |> broadcast_deployment_update()
+
+    # Trigger webhooks asynchronously - does not affect deployment
+    Upload.Webhooks.trigger_webhooks(site, "deployment.success")
+
+    result
   end
 
   @doc """
   Marks a site deployment as failed.
   """
   def mark_deployment_failed(%Site{} = site, error) do
-    site
-    |> update_deployment_status(%{
-      deployment_status: "failed",
-      last_deployment_error: format_deployment_error(error)
-    })
-    |> broadcast_deployment_update()
+    result =
+      site
+      |> update_deployment_status(%{
+        deployment_status: "failed",
+        last_deployment_error: format_deployment_error(error)
+      })
+      |> broadcast_deployment_update()
+
+    # Trigger webhooks asynchronously - does not affect deployment
+    Upload.Webhooks.trigger_webhooks(site, "deployment.failed")
+
+    result
   end
 
   # Broadcasts deployment status updates via PubSub

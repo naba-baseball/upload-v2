@@ -43,4 +43,24 @@ defmodule Upload.SitesFixtures do
 
     Repo.preload(site, :users)
   end
+
+  @doc """
+  Generate a webhook for a site.
+  """
+  def webhook_fixture(attrs \\ %{}) do
+    site_id = attrs[:site_id] || site_fixture().id
+
+    {:ok, webhook} =
+      attrs
+      |> Enum.into(%{
+        site_id: site_id,
+        url: "https://discord.com/api/webhooks/test/secret",
+        description: "Test webhook",
+        events: ["deployment.success", "deployment.failed"],
+        is_active: true
+      })
+      |> then(&Upload.Webhooks.create_webhook(site_id, &1))
+
+    webhook
+  end
 end

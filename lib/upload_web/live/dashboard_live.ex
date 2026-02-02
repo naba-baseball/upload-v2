@@ -174,6 +174,12 @@ defmodule UploadWeb.DashboardLive do
               </div>
               <div class="space-y-1">
                 <.site_url_links site={@single_site} icon="hero-arrow-top-right-on-square" />
+                <.link
+                  navigate={~p"/sites/#{@single_site.id}/webhooks"}
+                  class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                >
+                  <.icon name="hero-bell" class="w-4 h-4" /> Manage Webhooks
+                </.link>
               </div>
             </div>
 
@@ -210,6 +216,12 @@ defmodule UploadWeb.DashboardLive do
                       class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     >
                       <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> Upload
+                    </.link>
+                    <.link
+                      navigate={~p"/sites/#{site.id}/webhooks"}
+                      class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    >
+                      <.icon name="hero-bell" class="w-4 h-4" /> Webhooks
                     </.link>
                   </div>
                 </.card>
