@@ -187,8 +187,8 @@ defmodule UploadWeb.DashboardLiveTest do
       # Verify both sites are rendered
       assert html =~ "Site 1"
       assert html =~ "Site 2"
-      # Check for card styling
-      assert html =~ "border-indigo"
+      # Check for vintage card styling
+      assert html =~ "vintage-card"
     end
   end
 

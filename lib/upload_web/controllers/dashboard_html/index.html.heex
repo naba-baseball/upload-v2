@@ -1,5 +1,182 @@
-<div class="mx-auto max-w-2xl py-8">
-  <h1 class="text-4xl font-bold mb-4">User Dashboard</h1>
-  <p class="mb-4">Welcome, {@current_user.name}!</p>
-  <p>This is your user dashboard.</p>
-</div>
+<Layouts.app flash={@flash} current_user={@current_user}>
+  <div class="space-y-8">
+    <%!-- Page Header with Ornaments --%>
+    <div class="text-center space-y-4">
+      <div class="vintage-ornament">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-5xl text-primary">The Clubhouse</h1>
+
+      <p class="font-heading text-lg text-secondary italic">
+        Your Personal Dugout
+      </p>
+
+      <div class="vintage-ornament">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
+    </div>
+
+    <%!-- Welcome Section --%>
+    <div class="vintage-card baseball-stitches p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row items-center gap-6">
+        <%= if @current_user.avatar_url do %>
+          <div class="relative">
+            <img
+              src={@current_user.avatar_url}
+              alt={@current_user.name}
+              class="w-24 h-24 rounded-full border-4 border-primary shadow-xl"
+            />
+            <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-accent rounded-full flex items-center justify-center border-2 border-base-100">
+              <.icon name="hero-trophy" class="w-4 h-4 text-base-100" />
+            </div>
+          </div>
+        <% end %>
+
+        <div class="text-center sm:text-left">
+          <p class="font-body text-neutral text-sm uppercase tracking-widest mb-1">
+            Welcome, Player
+          </p>
+          <h2 class="font-display text-3xl text-primary">{@current_user.name}</h2>
+          <p class="font-body text-neutral mt-2">
+            <%= if @current_user.email do %>
+              {@current_user.email}
+            <% end %>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Quick Actions Grid --%>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <%!-- Upload Action --%>
+      <div class="group cursor-pointer">
+        <div class="vintage-card baseball-stitches p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary group-hover:bg-primary group-hover:text-primary-content transition-colors">
+              <.icon
+                name="hero-cloud-arrow-up"
+                class="w-7 h-7 text-primary group-hover:text-primary-content"
+              />
+            </div>
+            <div>
+              <h3 class="font-heading text-xl font-bold text-base-content mb-1">Upload Files</h3>
+              <p class="font-body text-sm text-neutral">
+                Share your baseball content with the team. Upload .tar.gz files containing your game data.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- View Uploads Action --%>
+      <div class="group cursor-pointer">
+        <div class="vintage-card baseball-stitches p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-full bg-secondary/10 flex items-center justify-center border-2 border-secondary group-hover:bg-secondary group-hover:text-secondary-content transition-colors">
+              <.icon
+                name="hero-folder-open"
+                class="w-7 h-7 text-secondary group-hover:text-secondary-content"
+              />
+            </div>
+            <div>
+              <h3 class="font-heading text-xl font-bold text-base-content mb-1">Your Archives</h3>
+              <p class="font-body text-sm text-neutral">
+                Browse your uploaded files and manage your baseball collection.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Settings Action --%>
+      <div class="group cursor-pointer">
+        <div class="vintage-card baseball-stitches p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center border-2 border-accent group-hover:bg-accent group-hover:text-accent-content transition-colors">
+              <.icon
+                name="hero-cog-6-tooth"
+                class="w-7 h-7 text-accent group-hover:text-accent-content"
+              />
+            </div>
+            <div>
+              <h3 class="font-heading text-xl font-bold text-base-content mb-1">Locker Room</h3>
+              <p class="font-body text-sm text-neutral">
+                Configure your webhook notifications and hosting preferences.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Admin Action (if applicable) --%>
+      <%= if @current_user.role == "admin" do %>
+        <.link navigate={~p"/admin/sites"} class="group">
+          <div class="vintage-card baseball-stitches corner-decoration p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full border-warning">
+            <div class="flex items-start gap-4">
+              <div class="w-14 h-14 rounded-full bg-warning/20 flex items-center justify-center border-2 border-warning group-hover:bg-warning transition-colors">
+                <.icon
+                  name="hero-shield-check"
+                  class="w-7 h-7 text-warning group-hover:text-warning-content"
+                />
+              </div>
+              <div>
+                <h3 class="font-heading text-xl font-bold text-base-content mb-1">
+                  Manager's Office
+                </h3>
+                <p class="font-body text-sm text-neutral">
+                  Administrative controls for managing user sites and configurations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </.link>
+      <% else %>
+        <%!-- Help Action for non-admins --%>
+        <div class="group cursor-pointer">
+          <div class="vintage-card baseball-stitches p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+            <div class="flex items-start gap-4">
+              <div class="w-14 h-14 rounded-full bg-info/10 flex items-center justify-center border-2 border-info group-hover:bg-info group-hover:text-info-content transition-colors">
+                <.icon
+                  name="hero-lifebuoy"
+                  class="w-7 h-7 text-info group-hover:text-info-content"
+                />
+              </div>
+              <div>
+                <h3 class="font-heading text-xl font-bold text-base-content mb-1">Playbook</h3>
+                <p class="font-body text-sm text-neutral">
+                  Get help with uploading files and using the portal.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%!-- Recent Activity Section --%>
+    <div class="vintage-card baseball-stitches p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <.icon name="hero-clock" class="w-6 h-6 text-primary" />
+        <h3 class="font-heading text-xl font-bold text-base-content">Recent Innings</h3>
+      </div>
+
+      <div class="border-t-2 border-primary/20 pt-4">
+        <div class="text-center py-8">
+          <.icon name="hero-inbox" class="w-12 h-12 text-neutral/50 mx-auto mb-3" />
+          <p class="font-body text-neutral italic">
+            No recent uploads. Time to step up to the plate!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Bottom Quote --%>
+    <div class="text-center pt-4">
+      <blockquote class="font-heading text-lg text-secondary italic">
+        "Every strike brings me closer to the next home run."
+      </blockquote>
+      <cite class="font-body text-sm text-neutral mt-2 block">— Babe Ruth</cite>
+    </div>
+  </div>
+</Layouts.app>

@@ -32,7 +32,8 @@ defmodule UploadWeb.CoreComponents do
   alias Phoenix.LiveView.JS
 
   @doc """
-  Renders flash notices.
+  Renders flash notices with vintage baseball styling.
+  Styled like old stadium announcement boards.
 
   ## Examples
 
@@ -60,15 +61,23 @@ defmodule UploadWeb.CoreComponents do
       {@rest}
     >
       <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
-        @kind == :error && "alert-error"
+        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap vintage-card",
+        @kind == :info && "border-success bg-success/10",
+        @kind == :error && "border-error bg-error/10"
       ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
-        <div>
-          <p :if={@title} class="font-semibold">{@title}</p>
-          <p>{msg}</p>
+        <.icon
+          :if={@kind == :info}
+          name="hero-information-circle"
+          class="size-5 shrink-0 text-success"
+        />
+        <.icon
+          :if={@kind == :error}
+          name="hero-exclamation-circle"
+          class="size-5 shrink-0 text-error"
+        />
+        <div class="font-body">
+          <p :if={@title} class="font-heading font-bold">{@title}</p>
+          <p class="text-sm">{msg}</p>
         </div>
         <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
@@ -81,19 +90,20 @@ defmodule UploadWeb.CoreComponents do
 
   @doc """
   Renders a button with navigation support.
+  Styled with 1920s vintage baseball aesthetic.
 
   ## Variants
 
-  - `primary` - Default indigo button for main actions
-  - `success` - Green button for save/confirm actions
-  - `secondary` - Gray button for cancel/secondary actions
-  - `danger` - Red button for destructive actions
-  - `ghost` - Subtle button with transparent background
+  - `primary` - Navy blue, main actions (like a team uniform)
+  - `success` - Deep green, save/confirm actions
+  - `secondary` - Vintage crimson, secondary actions
+  - `danger` - Deep red, destructive actions
+  - `ghost` - Transparent with subtle hover
 
   ## Sizes
 
-  - `default` - Standard padding (px-4 py-2)
-  - `sm` - Compact padding (px-3 py-1, smaller text)
+  - `default` - Standard padding
+  - `sm` - Compact padding
 
   ## Examples
 
@@ -101,7 +111,6 @@ defmodule UploadWeb.CoreComponents do
       <.button variant="primary">Primary Action</.button>
       <.button variant="success" type="submit">Save</.button>
       <.button variant="danger" size="sm">Delete</.button>
-      <.button variant="ghost" size="sm">Edit</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
   attr :type, :string, default: "button"
@@ -117,23 +126,20 @@ defmodule UploadWeb.CoreComponents do
 
   def button(%{rest: rest} = assigns) do
     base_classes =
-      "inline-flex items-center justify-center rounded font-medium transition-colors disabled:opacity-50"
+      "vintage-btn font-heading inline-flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 
     size_classes = %{
-      "default" => "px-4 py-2",
-      "sm" => "px-3 py-1 text-sm"
+      "default" => "px-6 py-3 text-base",
+      "sm" => "px-4 py-2 text-sm"
     }
 
     variant_classes = %{
-      "primary" =>
-        "bg-indigo-600 dark:bg-indigo-700 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600",
-      "success" =>
-        "bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600",
-      "secondary" =>
-        "bg-gray-400 dark:bg-gray-600 text-white hover:bg-gray-500 dark:hover:bg-gray-500",
-      "danger" => "bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-600",
+      "primary" => "vintage-btn-primary",
+      "success" => "bg-success border-success text-success-content hover:brightness-110",
+      "secondary" => "vintage-btn-secondary",
+      "danger" => "bg-error border-error text-error-content hover:brightness-110",
       "ghost" =>
-        "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+        "bg-transparent border-transparent text-neutral hover:bg-base-200 hover:border-base-300 shadow-none"
     }
 
     assigns =
@@ -160,20 +166,21 @@ defmodule UploadWeb.CoreComponents do
   end
 
   @doc """
-  Renders a card container with consistent styling.
+  Renders a card container with vintage baseball styling.
+  Like a classic baseball card from the 1920s.
 
   ## Variants
 
-  - `default` - Gray background for general content
-  - `indigo` - Indigo-tinted background for highlighted content
-  - `white` - White/dark gray background for standard containers
-  - `bordered` - White background with visible border
+  - `default` - Vintage cream paper background with primary border
+  - `indigo` - Deep navy background (like a night game)
+  - `white` - Clean white background
+  - `bordered` - Extra prominent border with stitch details
 
   ## Examples
 
       <.card>Simple content</.card>
-      <.card variant="indigo" hover>Hoverable indigo card</.card>
-      <.card variant="white" class="p-8">
+      <.card variant="indigo" hover>Dark stadium card</.card>
+      <.card variant="bordered" class="p-8">
         <:header>Card Title</:header>
         Body content here
       </.card>
@@ -190,27 +197,21 @@ defmodule UploadWeb.CoreComponents do
 
   def card(assigns) do
     variant_classes = %{
-      "default" => "bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700",
-      "indigo" =>
-        "bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800",
-      "white" =>
-        "bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 shadow dark:shadow-gray-900/50",
-      "bordered" => "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+      "default" => "vintage-card baseball-stitches",
+      "indigo" => "vintage-card bg-primary border-primary text-primary-content",
+      "white" => "vintage-card bg-base-100",
+      "bordered" => "vintage-card baseball-stitches corner-decoration border-4"
     }
 
     hover_classes =
       if assigns.hover do
-        case assigns.variant do
-          "indigo" -> "hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
-          _ -> "hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
-        end
+        "hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
       else
         nil
       end
 
     assigns =
       assign(assigns, :computed_class, [
-        "rounded-lg p-6",
         Map.fetch!(variant_classes, assigns.variant),
         hover_classes,
         assigns.class
@@ -218,11 +219,11 @@ defmodule UploadWeb.CoreComponents do
 
     ~H"""
     <div id={@id} class={@computed_class} {@rest}>
-      <div :if={@header != []} class="mb-4">
+      <div :if={@header != []} class="mb-6 border-b-2 border-primary/20 pb-4">
         {render_slot(@header)}
       </div>
       {render_slot(@inner_block)}
-      <div :if={@footer != []} class="mt-4">
+      <div :if={@footer != []} class="mt-6 border-t-2 border-primary/20 pt-4">
         {render_slot(@footer)}
       </div>
     </div>
@@ -508,17 +509,18 @@ defmodule UploadWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="fieldset mb-4">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="label mb-2 font-heading font-bold text-base-content">{@label}</span>
         <input
           type={@type}
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            @class ||
+              "w-full input bg-base-100 border-2 border-primary/30 rounded-lg font-body focus:border-primary focus:ring-2 focus:ring-primary/20",
+            @errors != [] && (@error_class || "input-error border-error")
           ]}
           {@rest}
         />
