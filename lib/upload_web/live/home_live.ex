@@ -70,6 +70,15 @@ defmodule UploadWeb.HomeLive do
                     <div class="space-y-3">
                       <.site_url_links site={site} />
                     </div>
+                    <div
+                      :if={site.last_deployed_at}
+                      id={"site-updated-#{site.id}"}
+                      phx-hook="LocalTime"
+                      data-timestamp={site.last_deployed_at}
+                      data-label="Updated"
+                      class="text-xs text-secondary mt-4 font-body"
+                    >
+                    </div>
                   </div>
                 <% else %>
                   <.link
@@ -92,6 +101,15 @@ defmodule UploadWeb.HomeLive do
                       <% else %>
                         {Site.subpath(site)}
                       <% end %>
+                    </div>
+                    <div
+                      :if={site.last_deployed_at}
+                      id={"site-updated-#{site.id}"}
+                      phx-hook="LocalTime"
+                      data-timestamp={site.last_deployed_at}
+                      data-label="Updated"
+                      class="text-xs text-secondary mt-4 font-body"
+                    >
                     </div>
                   </.link>
                 <% end %>
