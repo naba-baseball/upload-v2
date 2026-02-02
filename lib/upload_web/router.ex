@@ -27,13 +27,11 @@ defmodule UploadWeb.Router do
   scope "/", UploadWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-  end
+    live_session :public, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
+      live "/", HomeLive, :index
+    end
 
-  scope "/", UploadWeb do
-    pipe_through [:browser, :require_authenticated_user]
-
-    live_session :authenticated, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
+    live_session :dashboard, on_mount: [{UploadWeb.UserAuth, :mount_current_user}] do
       live "/dashboard", DashboardLive
       live "/sites/:site_id/upload", SiteUploadLive
     end

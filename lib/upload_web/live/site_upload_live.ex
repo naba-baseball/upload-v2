@@ -12,29 +12,35 @@ defmodule UploadWeb.SiteUploadLive do
 
   @impl true
   def mount(%{"site_id" => site_id}, _session, socket) do
-    user_id = socket.assigns.current_user.id
+    case socket.assigns.current_user do
+      nil ->
+        {:ok, assign(socket, :requires_auth, true)}
 
-    if Sites.user_assigned_to_site?(user_id, site_id) do
-      site = Sites.get_site!(site_id)
+      current_user ->
+        user_id = current_user.id
 
-      if connected?(socket) do
-        Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
-      end
+        if Sites.user_assigned_to_site?(user_id, site_id) do
+          site = Sites.get_site!(site_id)
 
-      {:ok,
-       socket
-       |> assign(:page_title, "Upload to #{site.name}")
-       |> assign(:site, site)
-       |> allow_upload(:site_archive,
-         accept: ~w(.gz),
-         max_entries: 1,
-         max_file_size: 524_288_000
-       )}
-    else
-      {:ok,
-       socket
-       |> put_flash(:error, "You don't have access to this site")
-       |> push_navigate(to: ~p"/dashboard")}
+          if connected?(socket) do
+            Phoenix.PubSub.subscribe(Upload.PubSub, "site:#{site.id}")
+          end
+
+          {:ok,
+           socket
+           |> assign(:page_title, "Upload to #{site.name}")
+           |> assign(:site, site)
+           |> allow_upload(:site_archive,
+             accept: ~w(.gz),
+             max_entries: 1,
+             max_file_size: 524_288_000
+           )}
+        else
+          {:ok,
+           socket
+           |> put_flash(:error, "You don't have access to this site")
+           |> push_navigate(to: ~p"/dashboard")}
+        end
     end
   end
 
@@ -104,37 +110,59 @@ defmodule UploadWeb.SiteUploadLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_user={@current_user}>
-      <div class="mx-auto max-w-2xl py-8 px-4">
-        <div class="mb-6">
-          <.back_link navigate={~p"/dashboard"}>Back to Dashboard</.back_link>
+    <%= if Map.get(assigns, :requires_auth) do %>
+      <Layouts.app flash={@flash} current_user={@current_user}>
+        <div class="mx-auto max-w-4xl py-8 px-4 text-center">
+          <div class="text-gray-400 dark:text-gray-600 mb-6">
+            <.icon name="hero-lock-closed" class="w-16 h-16 mx-auto" />
+          </div>
+          <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+            Sign In Required
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+            Please sign in with Discord to upload site archives.
+          </p>
+          <.link
+            href={~p"/auth/discord"}
+            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" /> Sign in with Discord
+          </.link>
         </div>
-
-        <.card variant="white">
+      </Layouts.app>
+    <% else %>
+      <Layouts.app flash={@flash} current_user={@current_user}>
+        <div class="mx-auto max-w-2xl py-8 px-4">
           <div class="mb-6">
-            <div class="flex items-center justify-between mb-1">
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Upload to {@site.name}
-              </h1>
-              <.deployment_status
-                status={@site.deployment_status}
-                last_deployed_at={@site.last_deployed_at}
-                error={@site.last_deployment_error}
-              />
-            </div>
-            <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              <.site_url_links site={@site} icon="hero-globe-alt" />
-            </div>
+            <.back_link navigate={~p"/dashboard"}>Back to Dashboard</.back_link>
           </div>
 
-          <p class="mb-6 text-gray-600 dark:text-gray-400">
-            Upload a .tar.gz file containing the site assets.
-          </p>
+          <.card variant="white">
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-1">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Upload to {@site.name}
+                </h1>
+                <.deployment_status
+                  status={@site.deployment_status}
+                  last_deployed_at={@site.last_deployed_at}
+                  error={@site.last_deployment_error}
+                />
+              </div>
+              <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <.site_url_links site={@site} icon="hero-globe-alt" />
+              </div>
+            </div>
 
-          <.upload_form upload={@uploads.site_archive} />
-        </.card>
-      </div>
-    </Layouts.app>
+            <p class="mb-6 text-gray-600 dark:text-gray-400">
+              Upload a .tar.gz file containing the site assets.
+            </p>
+
+            <.upload_form upload={@uploads.site_archive} />
+          </.card>
+        </div>
+      </Layouts.app>
+    <% end %>
     """
   end
 end

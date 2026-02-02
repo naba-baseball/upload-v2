@@ -6,8 +6,9 @@ defmodule UploadWeb.DashboardLiveTest do
   import Upload.SitesFixtures
 
   describe "mount" do
-    test "redirects when not authenticated", %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/"}}} = live(conn, ~p"/dashboard")
+    test "shows sign in prompt when not authenticated", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/dashboard")
+      assert html =~ "Sign In Required"
     end
 
     test "renders dashboard when authenticated", %{conn: conn} do

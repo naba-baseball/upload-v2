@@ -11,7 +11,7 @@ kill_signal = 'SIGTERM'
 
 [env]
   DATABASE_PATH = '/mnt/name/name.db'
-  PHX_HOST = 'upload-floral-dew-8915.fly.dev'
+  PHX_HOST = 'nabaleague.com'
   PORT = '8080'
 
 [[mounts]]
@@ -36,5 +36,6 @@ kill_signal = 'SIGTERM'
 
 [[vm]]
   memory = '2gb'
-  cpus = 2
+  cpus = 1
+  cpu_kind = 'performance'
   memory_mb = 2048

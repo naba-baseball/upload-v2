@@ -6,9 +6,10 @@ defmodule UploadWeb.SiteUploadLiveTest do
   import Upload.SitesFixtures
 
   describe "mount" do
-    test "redirects when not authenticated", %{conn: conn} do
+    test "shows sign in prompt when not authenticated", %{conn: conn} do
       site = site_fixture()
-      assert {:error, {:redirect, %{to: "/"}}} = live(conn, ~p"/sites/#{site.id}/upload")
+      {:ok, _view, html} = live(conn, ~p"/sites/#{site.id}/upload")
+      assert html =~ "Sign In Required"
     end
 
     test "redirects to dashboard when user is not assigned to site", %{conn: conn} do
