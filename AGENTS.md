@@ -348,8 +348,8 @@ This project uses a distinctive **1920s vintage baseball aesthetic** to create a
   </div>
 </div>
 
-# Card with baseball stitches
-<div class="vintage-card baseball-stitches p-6">
+# Card 
+<div class="vintage-card p-6">
   <!-- card content -->
 </div>
 

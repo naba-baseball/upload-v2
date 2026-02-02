@@ -211,83 +211,19 @@ body {
 }
 
 /* ========================================
-   BASEBALL STITCH PATTERN
-   ======================================== */
-
-.baseball-stitches {
-  position: relative;
-  border: 2px solid var(--color-primary);
-  border-radius: 1.25rem;
-  box-shadow: 
-    0 4px 15px -3px rgba(0, 0, 0, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-}
-
-.baseball-stitches::before,
-.baseball-stitches::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 2px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-accent) 0px,
-    var(--color-accent) 8px,
-    transparent 8px,
-    transparent 16px
-  );
-  left: 0;
-}
-
-.baseball-stitches::before {
-  top: -2px;
-}
-
-.baseball-stitches::after {
-  bottom: -2px;
-}
-
-/* Vertical stitches for sides */
-.stitch-vertical {
-  position: relative;
-}
-
-.stitch-vertical::before,
-.stitch-vertical::after {
-  content: '';
-  position: absolute;
-  width: 2px;
-  height: 100%;
-  background: repeating-linear-gradient(
-    0deg,
-    var(--color-accent) 0px,
-    var(--color-accent) 8px,
-    transparent 8px,
-    transparent 16px
-  );
-  top: 0;
-}
-
-.stitch-vertical::before {
-  left: -2px;
-}
-
-.stitch-vertical::after {
-  right: -2px;
-}
-
-/* ========================================
    VINTAGE CARD EFFECT
    ======================================== */
+
+.vintage-surface {
+  background: linear-gradient(135deg, var(--color-base-100) 0%, var(--color-base-200) 100%);
+  border: 2px solid var(--color-primary);
+  border-radius: 1.25rem;
+}
 
 .vintage-card {
   background: linear-gradient(135deg, var(--color-base-100) 0%, var(--color-base-200) 100%);
   border: 2px solid var(--color-primary);
   border-radius: 1.25rem;
-  box-shadow: 
-    0 8px 25px -5px rgba(0, 0, 0, 0.15),
-    0 4px 12px -2px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(2px);
@@ -440,7 +376,7 @@ body {
 @keyframes vintage-fade-in {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.95);
+    transform: translateY(2px) scale(0.995);
   }
   to {
     opacity: 1;

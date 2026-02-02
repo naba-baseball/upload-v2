@@ -197,7 +197,7 @@ defmodule UploadWeb.CoreComponents do
 
   def card(assigns) do
     variant_classes = %{
-      "default" => "vintage-card baseball-stitches shadow-lg",
+      "default" => "vintage-card shadow-lg",
       "indigo" => "vintage-card bg-primary border-primary text-primary-content shadow-xl",
       "white" => "vintage-card bg-base-100 shadow-md border-primary/30",
       "bordered" => "vintage-card corner-decoration border-4 border-primary/50 shadow-lg"
@@ -350,8 +350,8 @@ defmodule UploadWeb.CoreComponents do
     <div class={["flex items-center gap-3", @class]}>
       <.user_avatar user={@user} size={@avatar_size} />
       <div>
-        <p class="font-semibold text-gray-900 dark:text-gray-100">{@user.name}</p>
-        <p :if={@show_email} class="text-sm text-gray-600 dark:text-gray-400">{@user.email}</p>
+        <p class="font-semibold">{@user.name}</p>
+        <p :if={@show_email} class="text-sm text-base-content/80">{@user.email}</p>
       </div>
     </div>
     """

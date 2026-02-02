@@ -156,7 +156,7 @@ defmodule UploadWeb.Layouts do
     <%!-- Main Content Area with Vintage Card Container --%>
     <main class="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div class="mx-auto max-w-4xl">
-        <div class="vintage-card baseball-stitches p-6 sm:p-8 lg:p-12 animate-vintage-fade-in">
+        <div class="sm:p-8 lg:p-12 animate-vintage-fade-in">
           {render_slot(@inner_block) || @inner_content}
         </div>
       </div>

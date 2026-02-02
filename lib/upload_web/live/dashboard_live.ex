@@ -117,7 +117,7 @@ defmodule UploadWeb.DashboardLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-4xl py-8 px-4">
+    <div class="mx-auto max-w-4xl py-8">
       <%= if is_nil(@current_user) do %>
         <div class="text-center py-16">
           <div class="text-gray-400 dark:text-gray-600 mb-6">
@@ -187,7 +187,7 @@ defmodule UploadWeb.DashboardLive do
               </div>
             </div>
 
-            <div class="vintage-card card-hover baseball-stitches corner-decoration bg-gradient-to-br from-base-100 to-base-200">
+            <div class="vintage-card card-hover corner-decoration bg-gradient-to-br from-base-100 to-base-200">
               <div class="p-8">
                 <div class="text-center mb-6">
                   <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
@@ -220,9 +220,9 @@ defmodule UploadWeb.DashboardLive do
                 :for={site <- @sites}
                 variant="default"
                 hover
-                class="group relative overflow-hidden"
+                class="relative !overflow-visible"
               >
-                <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="pe-2.5 vintage-surface rounded-full w-fit self-center -mt-7 mx-auto">
                   <.deployment_status
                     status={site.deployment_status}
                     last_deployed_at={site.last_deployed_at}
@@ -244,20 +244,22 @@ defmodule UploadWeb.DashboardLive do
                   </div>
                 </div>
 
-                <div class="border-t border-primary/20 pt-4">
-                  <.link
-                    navigate={~p"/sites/#{site.id}/upload"}
-                    class="vintage-btn vintage-btn-primary w-full justify-center text-sm"
-                  >
-                    <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> Upload
-                  </.link>
-                  <.link
-                    navigate={~p"/sites/#{site.id}/webhooks"}
-                    class="vintage-btn vintage-btn-secondary w-full justify-center text-sm"
-                  >
-                    <.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings
-                  </.link>
-                </div>
+                <:footer>
+                  <div class="grid gap-4">
+                    <.link
+                      navigate={~p"/sites/#{site.id}/upload"}
+                      class="vintage-btn vintage-btn-primary text-center"
+                    >
+                      <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> Upload
+                    </.link>
+                    <.link
+                      navigate={~p"/sites/#{site.id}/webhooks"}
+                      class="vintage-btn vintage-btn-secondary text-center"
+                    >
+                      <.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings
+                    </.link>
+                  </div>
+                </:footer>
               </.card>
             </div>
           <% else %>
@@ -273,16 +275,14 @@ defmodule UploadWeb.DashboardLive do
           <% end %>
         <% end %>
 
-        <div class="mt-12 vintage-card bg-gradient-to-br from-base-100 to-base-200">
-          <div class="p-8">
-            <div class="flex items-center gap-4 mb-6">
-              <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <.icon name="hero-user" class="w-6 h-6" />
-              </div>
-              <h2 class="font-heading text-2xl font-bold">Account Information</h2>
+        <div class="mt-12 p-8 bg-gradient-to-br rounded-lg from-base-100 to-base-200">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <.icon name="hero-user" class="w-6 h-6" />
             </div>
-            <.user_profile user={@current_user} />
+            <h2 class="font-heading text-2xl font-bold">Account Information</h2>
           </div>
+          <.user_profile user={@current_user} />
         </div>
       <% end %>
     </div>
