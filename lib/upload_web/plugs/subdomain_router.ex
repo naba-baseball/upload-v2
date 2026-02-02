@@ -150,7 +150,7 @@ defmodule UploadWeb.Plugs.SubdomainRouter do
       # Apply format routing rules (e.g., prepend news/html for OOTP23 format)
       routed_path = FormatRouter.route_path(site.format_version, normalized_path)
 
-      site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+      site_dir = Upload.Sites.site_dir(site)
 
       # Try to serve the requested file or fall back to index.html patterns
       file_path = resolve_file_path(site_dir, routed_path)

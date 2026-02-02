@@ -13,6 +13,7 @@ kill_signal = 'SIGTERM'
   DATABASE_PATH = '/mnt/name/name.db'
   PHX_HOST = 'nabaleague.com'
   PORT = '8080'
+  SITES_DIR = '/mnt/name/sites'
 
 [[mounts]]
   source = 'name'

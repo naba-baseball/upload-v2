@@ -49,7 +49,7 @@ defmodule Upload.DeploymentRunner do
 
   defp deploy_to_local(site, tarball_path) do
     # Determine target directory for this site
-    site_dir = Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+    site_dir = Upload.Sites.site_dir(site)
 
     # Clean up existing site directory before extraction
     if File.exists?(site_dir) do

@@ -12,8 +12,10 @@ defmodule Upload.Sites do
     Repo.all(Site)
   end
 
-  def site_dir(%Site{} = site),
-    do: Path.join([:code.priv_dir(:upload), "static", "sites", site.subdomain])
+  def site_dir(%Site{} = site) do
+    base_dir = Application.get_env(:upload, :sites_dir)
+    Path.join(base_dir, site.subdomain)
+  end
 
   @doc """
   Gets a single site.

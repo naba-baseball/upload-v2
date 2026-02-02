@@ -30,6 +30,13 @@ config :ueberauth, Ueberauth.Strategy.Discord.OAuth,
 # Base domain for site hosting
 config :upload, :base_domain, System.get_env("BASE_DOMAIN", "nabaleague.com")
 
+# Site storage directory - defaults to priv/static/sites for local dev
+# For production on Fly.io, set SITES_DIR=/mnt/name/sites to use the persistent volume
+config :upload,
+       :sites_dir,
+       System.get_env("SITES_DIR") ||
+         Path.join([:code.priv_dir(:upload), "static", "sites"])
+
 if config_env() == :prod do
   database_path =
     System.get_env("DATABASE_PATH") ||
