@@ -174,19 +174,22 @@ defmodule UploadWeb.SiteWebhooksLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-4xl py-8 px-4">
-      <div class="mb-8 flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {@site.name} Webhooks
-          </h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">
-            Configure notifications for deployment events
-          </p>
+    <div>
+      <div class="vintage-ornament mb-6">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
+
+      <div class="text-center mb-8">
+        <h1 class="font-display text-3xl mb-2">{@site.name} Webhooks</h1>
+        <p class="text-secondary">Configure notifications for deployment events</p>
+        <div class="mt-6">
+          <.link
+            navigate={~p"/dashboard"}
+            class="inline-flex items-center gap-1 text-secondary hover:text-primary transition-colors"
+          >
+            <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Dashboard
+          </.link>
         </div>
-        <.link navigate={~p"/dashboard"} class="text-indigo-600 hover:text-indigo-700 font-medium">
-          ← Back to Dashboard
-        </.link>
       </div>
 
       <%= if @editing_webhook do %>
@@ -205,8 +208,11 @@ defmodule UploadWeb.SiteWebhooksLive do
 
   defp webhook_form(assigns) do
     ~H"""
-    <.card variant="white">
-      <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+    <div class="vintage-card p-8">
+      <div class="vintage-ornament mb-4">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
+      <h2 class="font-display text-2xl text-center mb-6">
         {if @webhook.id, do: "Edit Webhook", else: "New Webhook"}
       </h2>
 
@@ -219,10 +225,10 @@ defmodule UploadWeb.SiteWebhooksLive do
             placeholder="https://discord.com/api/webhooks/..."
             required
           />
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p class="text-sm text-secondary mt-1">
             For Discord, copy the webhook URL from:
           </p>
-          <ol class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <ol class="text-sm text-secondary mt-1">
             <li>(hover over a channel) Edit channel > Integrations > Webhooks</li>
           </ol>
         </div>
@@ -236,23 +242,23 @@ defmodule UploadWeb.SiteWebhooksLive do
           />
         </div>
 
-        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="pt-4 border-t-2 border-primary/20">
           <.input
             field={@form[:role_mention]}
             type="text"
             label="Role Mention (optional)"
             placeholder="@everyone or <@&123456789>"
           />
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Mention a role when webhook fires. Examples: <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">@everyone</code>, <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">@here</code>, or a user/role ID like
-            <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
+          <p class="text-sm text-secondary mt-1">
+            Mention a role when webhook fires. Examples: <code class="bg-base-200 px-1 py-0.5 rounded">@everyone</code>, <code class="bg-base-200 px-1 py-0.5 rounded">@here</code>, or a user/role ID like
+            <code class="bg-base-200 px-1 py-0.5 rounded">
               &lt;@&amp;123456789&gt;
             </code>
           </p>
         </div>
 
         <div>
-          <span class="label">Events</span>
+          <span class="label font-display text-base-content">Events</span>
           <div class="space-y-2 mt-2">
             <label class="flex items-center gap-2">
               <input
@@ -260,9 +266,9 @@ defmodule UploadWeb.SiteWebhooksLive do
                 name="site_webhook[events][]"
                 value="deployment.success"
                 checked={"deployment.success" in (@form[:events].value || [])}
-                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                class="rounded border-gray-300 checkbox-checkbox-sm"
               />
-              <span class="text-gray-700 dark:text-gray-300">Deployment Successful</span>
+              <span class="text-base-content">Deployment Successful</span>
             </label>
             <label class="flex items-center gap-2">
               <input
@@ -270,9 +276,9 @@ defmodule UploadWeb.SiteWebhooksLive do
                 name="site_webhook[events][]"
                 value="deployment.failed"
                 checked={"deployment.failed" in (@form[:events].value || [])}
-                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                class="rounded border-gray-300 checkbox-checkbox-sm"
               />
-              <span class="text-gray-700 dark:text-gray-300">Deployment Failed</span>
+              <span class="text-base-content">Deployment Failed</span>
             </label>
           </div>
         </div>
@@ -284,9 +290,9 @@ defmodule UploadWeb.SiteWebhooksLive do
               name="site_webhook[is_active]"
               value="true"
               checked={@form[:is_active].value}
-              class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              class="rounded checkbox-checkbox-sm"
             />
-            <span class="text-gray-700 dark:text-gray-300">Active</span>
+            <span class="text-base-content">Active</span>
           </label>
         </div>
 
@@ -295,186 +301,171 @@ defmodule UploadWeb.SiteWebhooksLive do
           <.button type="button" variant="secondary" phx-click="cancel">Cancel</.button>
         </div>
       </.form>
-    </.card>
+    </div>
     """
   end
 
   defp webhooks_list(assigns) do
     ~H"""
     <div class="space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Configured Webhooks</h2>
-        <.button phx-click="new" variant="secondary">+ Add Webhook</.button>
+      <div class="vintage-card p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <.icon name="hero-bell-alert" class="w-8 h-8 text-primary" />
+            <h2 class="font-display text-xl">Configured Webhooks</h2>
+          </div>
+          <.button phx-click="new" variant="secondary">
+            <.icon name="hero-plus" class="w-4 h-4" /> Add Webhook
+          </.button>
+        </div>
       </div>
 
       <%= if @webhooks == [] do %>
-        <.card variant="white">
-          <.empty_state icon="hero-bell-slash">
+        <div class="vintage-card text-center py-12">
+          <.icon name="hero-bell-slash" class="w-16 h-16 text-primary/50 mx-auto mb-6" />
+          <h3 class="font-display text-2xl mb-4">No Webhooks Yet</h3>
+          <p class="text-secondary max-w-md mx-auto">
             No webhooks configured. Add a webhook to receive deployment notifications.
-          </.empty_state>
-        </.card>
+          </p>
+        </div>
       <% else %>
-        <div class="space-y-4">
-          <.card :for={webhook <- @webhooks} variant="white" class="p-6">
+        <div class="grid gap-4">
+          <.card :for={webhook <- @webhooks} class="vintage-card">
             <div class="flex items-start justify-between">
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                    {webhook.description || webhook.url}
-                  </h3>
+                <div class="flex items-center gap-4 mb-4">
+                  <.icon
+                    name={webhook_icon(webhook)}
+                    class={["w-8 h-8", webhook.is_active && "text-primary"]}
+                  />
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-display text-lg mb-1">
+                      {webhook.description || truncate_url(webhook.url)}
+                    </h3>
+                    <p class="text-sm text-secondary font-body truncate" title={webhook.url}>
+                      {webhook.url}
+                    </p>
+                  </div>
                 </div>
 
-                <p class="text-sm text-gray-600 dark:text-gray-400 font-mono truncate mb-2">
-                  {webhook.url}
-                </p>
-
-                <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  <span>
-                    Events: {Enum.join(webhook.events, ", ")}
-                  </span>
+                <div class="space-y-2 mb-4 text-sm text-secondary">
+                  <div class="flex items-center gap-2">
+                    <.icon name="hero-bell" class="w-4 h-4" />
+                    <span>Events: {Enum.join(webhook.events, ", ")}</span>
+                  </div>
                   <%= if webhook.last_triggered_at do %>
-                    <span>
-                      Last triggered: {Calendar.strftime(
-                        webhook.last_triggered_at,
-                        "%Y-%m-%d %H:%M UTC"
-                      )}
-                    </span>
+                    <div class="flex items-center gap-2">
+                      <.icon name="hero-clock" class="w-4 h-4" />
+                      <span
+                        id={"webhook-trigger-#{webhook.id}"}
+                        phx-hook="LocalTime"
+                        data-timestamp={webhook.last_triggered_at}
+                        data-label="Last triggered"
+                      >
+                      </span>
+                    </div>
                   <% end %>
                 </div>
 
                 <%= if webhook.last_response_status do %>
+                  <% is_success =
+                    webhook.last_response_status >= 200 and webhook.last_response_status < 300 %>
                   <div class={[
-                    "mt-3 p-3 rounded text-sm",
-                    response_status_class(webhook.last_response_status)
+                    "mt-3 p-3 rounded text-sm vintage-surface",
+                    !is_success && "border-error"
                   ]}>
-                    <div class="font-medium mb-1">
+                    <div class={["font-medium mb-1", is_success && "text-success"]}>
                       Last Response: {webhook.last_response_status}
                     </div>
                     <%= if webhook.last_response_body do %>
-                      <pre class="text-xs overflow-x-auto whitespace-pre-wrap font-mono mt-1 opacity-75"><%= webhook.last_response_body %></pre>
+                      <pre class="text-xs overflow-x-auto whitespace-pre-wrap font-mono bg-base-100 p-2 rounded"><%= webhook.last_response_body %></pre>
                     <% end %>
                   </div>
                 <% end %>
 
                 <%= if @test_result && @test_result.webhook_id == webhook.id do %>
                   <div class={[
-                    "mt-3 p-3 rounded text-sm border",
-                    if(@test_result.success,
-                      do: "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800",
-                      else: "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
-                    )
+                    "mt-3 p-3 rounded text-sm vintage-surface",
+                    @test_result.success || "border-error"
                   ]}>
                     <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <div class={[
-                          "font-medium mb-1",
-                          if(@test_result.success,
-                            do: "text-green-800 dark:text-green-200",
-                            else: "text-red-800 dark:text-red-200"
-                          )
-                        ]}>
-                          <%= if @test_result.success do %>
-                            Test Successful - Status {@test_result.status}
-                          <% else %>
-                            Test Failed
-                          <% end %>
-                        </div>
-                        <%= if @test_result.success && @test_result.body do %>
-                          <pre class="text-xs overflow-x-auto whitespace-pre-wrap font-mono bg-white dark:bg-gray-800 p-2 rounded opacity-75"><%= @test_result.body %></pre>
-                        <% end %>
-                        <%= if !@test_result.success do %>
-                          <p class="text-xs text-red-700 dark:text-red-300">{@test_result.error}</p>
+                      <div class={["font-medium mb-1", @test_result.success && "text-success"]}>
+                        <%= if @test_result.success do %>
+                          Test Successful - Status {@test_result.status}
+                        <% else %>
+                          Test Failed
                         <% end %>
                       </div>
+                      <%= if @test_result.success && @test_result.body do %>
+                        <pre class="text-xs overflow-x-auto whitespace-pre-wrap font-mono bg-base-100 p-2 rounded mt-2"><%= @test_result.body %></pre>
+                      <% end %>
+                      <%= if !@test_result.success do %>
+                        <p class="text-xs text-error mt-2">{@test_result.error}</p>
+                      <% end %>
                     </div>
                   </div>
                 <% end %>
               </div>
 
-              <div class="flex items-center gap-2 ml-4">
+              <div class="flex items-center gap-2 ml-4 flex-col w-28">
                 <%= if @test_result && @test_result.webhook_id == webhook.id do %>
-                  <button
-                    type="button"
+                  <.button
                     phx-click="clear_test_result"
-                    class={[
-                      "px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
-                      if(@test_result.success,
-                        do: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-                        else: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                      )
-                    ]}
+                    variant={if @test_result.success, do: "success", else: "danger"}
+                    size="sm"
+                    class="w-full"
                   >
                     <%= if @test_result.success do %>
-                      <span class="flex items-center gap-1">
-                        <.icon name="hero-check" class="w-4 h-4" /> Test OK
-                      </span>
+                      <.icon name="hero-check" class="w-4 h-4" /> OK
                     <% else %>
-                      <span class="flex items-center gap-1">
-                        <.icon name="hero-x-mark" class="w-4 h-4" /> Failed
-                      </span>
+                      <.icon name="hero-x-mark" class="w-4 h-4" /> Fail
                     <% end %>
-                  </button>
+                  </.button>
                 <% end %>
+
                 <%= if @testing_webhook_id == webhook.id do %>
-                  <span class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="inline-block w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin">
-                    </span>
-                    Testing...
-                  </span>
+                  <.button disabled variant="primary" size="sm" class="w-full">
+                    <.icon name="hero-arrow-path" class="w-4 h-4 animate-spin" /> Test...
+                  </.button>
                 <% else %>
-                  <button
+                  <.button
                     phx-click="test_webhook"
                     phx-value-id={webhook.id}
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    variant="primary"
+                    size="sm"
+                    class="w-full"
                   >
-                    <.icon name="hero-bolt" class="w-4 h-4" />
-                    <span>Test</span>
-                  </button>
+                    <.icon name="hero-bolt" class="w-4 h-4" /> Test
+                  </.button>
                 <% end %>
-                <button
+
+                <.button
                   phx-click="toggle"
                   phx-value-id={webhook.id}
-                  class={[
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
-                    if(webhook.is_active,
-                      do:
-                        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800",
-                      else:
-                        "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    )
-                  ]}
-                  title={if webhook.is_active, do: "Click to disable", else: "Click to enable"}
+                  variant={if webhook.is_active, do: "success", else: "secondary"}
+                  size="sm"
+                  class="w-full"
                 >
-                  <span class={[
-                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out",
-                    webhook.is_active && "bg-green-500",
-                    !webhook.is_active && "bg-gray-300 dark:bg-gray-500"
-                  ]}>
-                    <span class={[
-                      "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                      webhook.is_active && "translate-x-4",
-                      !webhook.is_active && "translate-x-0"
-                    ]} />
-                  </span>
-                  <span>{if webhook.is_active, do: "On", else: "Off"}</span>
-                </button>
-                <button
-                  phx-click="edit"
-                  phx-value-id={webhook.id}
-                  class="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-                  title="Edit"
-                >
-                  <.icon name="hero-pencil" class="w-5 h-5" />
-                </button>
-                <button
-                  phx-click="delete"
-                  phx-value-id={webhook.id}
-                  data-confirm="Are you sure you want to delete this webhook?"
-                  class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                  title="Delete"
-                >
-                  <.icon name="hero-trash" class="w-5 h-5" />
-                </button>
+                  {if webhook.is_active, do: "Active", else: "Inactive"}
+                </.button>
+
+                <div class="flex gap-1 w-full border-t border-primary/10 pt-2 justify-center">
+                  <button
+                    phx-click="edit"
+                    phx-value-id={webhook.id}
+                    class="p-2 text-secondary hover:text-primary"
+                  >
+                    <.icon name="hero-pencil" class="w-5 h-5" />
+                  </button>
+                  <button
+                    phx-click="delete"
+                    phx-value-id={webhook.id}
+                    data-confirm="Are you sure you want to delete this webhook?"
+                    class="p-2 text-secondary hover:text-error"
+                  >
+                    <.icon name="hero-trash" class="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </.card>
@@ -484,9 +475,14 @@ defmodule UploadWeb.SiteWebhooksLive do
     """
   end
 
-  defp response_status_class(status) when status >= 200 and status < 300,
-    do: "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-200"
+  defp webhook_icon(%{is_active: true}), do: "hero-bell"
+  defp webhook_icon(%{is_active: false}), do: "hero-bell-slash"
 
-  defp response_status_class(_status),
-    do: "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200"
+  defp truncate_url(url, max_length \\ 50) do
+    if String.length(url) > max_length do
+      String.slice(url, 0, max_length) <> "..."
+    else
+      url
+    end
+  end
 end

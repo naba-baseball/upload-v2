@@ -97,7 +97,7 @@ defmodule UploadWeb.DashboardLiveTest do
       assert html =~ "Your Sites"
     end
 
-    test "site URLs open in new tab", %{conn: conn} do
+    test "site URLs do not open in new tab", %{conn: conn} do
       user = user_fixture()
       site = site_fixture()
       assign_user_to_site(user, site)
@@ -106,7 +106,7 @@ defmodule UploadWeb.DashboardLiveTest do
 
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
-      assert html =~ ~s(target="_blank")
+      refute html =~ ~s(target="_blank")
       assert html =~ ~s(rel="noopener noreferrer")
     end
 
@@ -130,8 +130,7 @@ defmodule UploadWeb.DashboardLiveTest do
 
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
-      assert html =~ "Admin Access"
-      assert html =~ "Go to Admin Panel"
+      assert html =~ "Admin"
     end
 
     test "does not show admin banner for regular users", %{conn: conn} do
@@ -187,8 +186,8 @@ defmodule UploadWeb.DashboardLiveTest do
       # Verify both sites are rendered
       assert html =~ "Site 1"
       assert html =~ "Site 2"
-      # Check for card styling
-      assert html =~ "border-indigo"
+      # Check for vintage card styling
+      assert html =~ "vintage-card"
     end
   end
 

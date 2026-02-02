@@ -117,7 +117,7 @@ defmodule UploadWeb.DashboardLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-4xl py-8 px-4">
+    <div class="mx-auto max-w-4xl py-8">
       <%= if is_nil(@current_user) do %>
         <div class="text-center py-16">
           <div class="text-gray-400 dark:text-gray-600 mb-6">
@@ -126,12 +126,12 @@ defmodule UploadWeb.DashboardLive do
           <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">
             Sign In Required
           </h1>
-          <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+          <p class="text-base-content mb-8 max-w-md mx-auto">
             Please sign in with Discord to access your dashboard and manage your sites.
           </p>
           <.link
             href={~p"/auth/discord"}
-            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition-colors"
+            class="vintage-btn vintage-btn-primary inline-flex items-center gap-2"
           >
             <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" /> Sign in with Discord
           </.link>
@@ -144,102 +144,151 @@ defmodule UploadWeb.DashboardLive do
           <p class="text-gray-600 dark:text-gray-400">Your personal dashboard</p>
         </div>
 
-        <%= if @current_user.role == "admin" do %>
-          <div class="mb-6 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg p-4 flex justify-between items-center">
-            <div>
-              <h3 class="font-semibold">Admin Access</h3>
-              <p class="text-sm text-indigo-100 dark:text-indigo-200">
-                Manage sites, users, and uploads
-              </p>
-            </div>
-            <.button navigate={~p"/admin/sites"}>
-              Go to Admin Panel
-            </.button>
-          </div>
-        <% end %>
-
-        <.card variant="white">
-          <%= if @single_site do %>
-            <%!-- Single site: show upload form inline --%>
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-2">
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                  {@single_site.name}
-                </h2>
-                <.deployment_status
-                  status={@single_site.deployment_status}
-                  last_deployed_at={@single_site.last_deployed_at}
-                  error={@single_site.last_deployment_error}
-                />
-              </div>
-              <div class="space-y-1">
-                <.site_url_links site={@single_site} icon="hero-arrow-top-right-on-square" />
-                <.link
-                  navigate={~p"/sites/#{@single_site.id}/webhooks"}
-                  class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-                >
-                  <.icon name="hero-bell" class="w-4 h-4" /> Manage Webhooks
-                </.link>
-              </div>
-            </div>
-
-            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                Upload Site Archive
-              </h3>
-              <p class="mb-6 text-gray-600 dark:text-gray-400">
-                Upload a .tar.gz file containing the site assets.
-              </p>
-
-              <.upload_form upload={@uploads.site_archive} />
-            </div>
-          <% else %>
-            <%!-- Multiple sites or no sites: show cards --%>
-            <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Your Sites</h2>
-
-            <%= if @sites != [] do %>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <.card :for={site <- @sites} variant="indigo" hover class="p-6">
-                  <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {site.name}
-                    </h3>
-                    <.deployment_status
-                      status={site.deployment_status}
-                      last_deployed_at={site.last_deployed_at}
-                    />
+        <%= if @single_site do %>
+          <%!-- Single site: show streamlined layout --%>
+          <div class="space-y-8">
+            <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200 overflow-hidden">
+              <div class="p-8 pb-0">
+                <div class="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 class="font-display text-3xl mb-2">
+                      {@single_site.name}
+                    </h2>
+                    <div class="flex items-center gap-4 text-sm text-secondary">
+                      <.deployment_status
+                        status={@single_site.deployment_status}
+                        last_deployed_at={@single_site.last_deployed_at}
+                        error={@single_site.last_deployment_error}
+                      />
+                    </div>
                   </div>
-                  <div class="flex flex-col gap-2">
-                    <.site_url_links site={site} icon="hero-arrow-top-right-on-square" />
+                  <div class="text-right">
+                    <.site_url_links site={@single_site} />
+                  </div>
+                </div>
+              </div>
+
+              <div class="vintage-ornament mx-8">
+                <div class="vintage-ornament-diamond"></div>
+              </div>
+
+              <div class="p-8 pt-4">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="font-display text-xl">Quick Actions</h3>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                  <.link
+                    navigate={~p"/sites/#{@single_site.id}/webhooks"}
+                    class="vintage-btn vintage-btn-secondary inline-flex items-center gap-2"
+                  >
+                    <.icon name="hero-bell" class="w-4 h-4" /> Manage Webhooks
+                  </.link>
+                </div>
+              </div>
+            </div>
+
+            <div class="vintage-card card-hover bg-gradient-to-br from-base-100 to-base-200">
+              <div class="p-8">
+                <div class="text-center mb-6">
+                  <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                    <.icon name="hero-cloud-arrow-up" class="w-8 h-8" />
+                  </div>
+                  <h3 class="font-display text-2xl mb-2">
+                    Upload Site Archive
+                  </h3>
+                  <p class="text-secondary">
+                    Upload a .tar.gz file containing the site assets.
+                  </p>
+                </div>
+
+                <.upload_form upload={@uploads.site_archive} />
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <%!-- Multiple sites: show improved grid layout --%>
+          <div class="mb-8">
+            <div class="vintage-ornament mb-6">
+              <div class="vintage-ornament-diamond"></div>
+            </div>
+            <h2 class="font-display text-3xl text-center mb-8">Your Sites</h2>
+          </div>
+
+          <%= if @sites != [] do %>
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <.card
+                :for={site <- @sites}
+                variant="default"
+                hover
+                class="relative !overflow-visible"
+              >
+                <div class={[
+                  "vintage-surface rounded-full w-fit self-center -mt-7 mx-auto",
+                  if site.last_deployed_at do
+                    "pe-2.5"
+                  end
+                ]}>
+                  <.deployment_status
+                    status={site.deployment_status}
+                    last_deployed_at={site.last_deployed_at}
+                  />
+                </div>
+
+                <div class="mb-6">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                      <h3 class="font-display text-xl mb-2 group-hover:text-accent transition-colors">
+                        {site.name}
+                      </h3>
+                      <div class="h-1 w-16 bg-accent rounded-full"></div>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3">
+                    <.site_url_links site={site} />
+                  </div>
+                </div>
+
+                <:footer>
+                  <div class="grid gap-4">
                     <.link
                       navigate={~p"/sites/#{site.id}/upload"}
-                      class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                      class="vintage-btn vintage-btn-primary text-center"
                     >
                       <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> Upload
                     </.link>
                     <.link
                       navigate={~p"/sites/#{site.id}/webhooks"}
-                      class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                      class="vintage-btn vintage-btn-secondary text-center"
                     >
-                      <.icon name="hero-bell" class="w-4 h-4" /> Webhooks
+                      <.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings
                     </.link>
                   </div>
-                </.card>
+                </:footer>
+              </.card>
+            </div>
+          <% else %>
+            <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200 text-center py-12">
+              <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
+                <.icon name="hero-inbox" class="w-10 h-10" />
               </div>
-            <% else %>
-              <.empty_state icon="hero-inbox">
+              <h3 class="font-display text-2xl mb-4">No Sites Yet</h3>
+              <p class="text-secondary max-w-md mx-auto">
                 You haven't been assigned to any sites yet. Please contact an administrator to get access.
-              </.empty_state>
-            <% end %>
+              </p>
+            </div>
           <% end %>
-        </.card>
+        <% end %>
 
-        <.card variant="white" class="mt-8">
-          <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Account Information
-          </h2>
+        <div class="mt-12 p-8 bg-gradient-to-br rounded-lg from-base-100 to-base-200">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <.icon name="hero-user" class="w-6 h-6" />
+            </div>
+            <h2 class="font-display text-2xl">Account Information</h2>
+          </div>
           <.user_profile user={@current_user} />
-        </.card>
+        </div>
       <% end %>
     </div>
     """

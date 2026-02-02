@@ -7,6 +7,15 @@
     <.live_title default="Upload">
       {assigns[:page_title]}
     </.live_title>
+    
+<!-- Google Fonts for 1920s Baseball Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Rye&display=swap"
+      rel="stylesheet"
+    />
+
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
@@ -41,7 +50,7 @@
       })();
     </script>
   </head>
-  <body>
+  <body class="font-body antialiased paper-texture min-h-screen">
     {@inner_content}
   </body>
 </html>

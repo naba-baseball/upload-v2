@@ -245,18 +245,16 @@ defmodule UploadWeb.Admin.SitesLive do
             <span class="text-gray-500 dark:text-gray-400">Subdomain:</span>
             <.link
               href={"#{Site.url_scheme()}#{subdomain_preview(@form[:subdomain].value, @base_domain)}"}
-              target="_blank"
-              class="font-mono text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline"
+              class="font-mono hover:text-accent hover:underline"
             >
               {Site.url_scheme()}{subdomain_preview(@form[:subdomain].value, @base_domain)}
             </.link>
           </p>
           <p>
-            <span class="text-gray-500 dark:text-gray-400">Subpath:</span>
+            <span class="text-secondary">Subpath:</span>
             <.link
               href={"#{Site.url_scheme()}#{@base_domain}/sites/#{subdomain_value(@form[:subdomain].value)}"}
-              target="_blank"
-              class="font-mono text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline"
+              class="font-mono hover:text-accent hover:underline"
             >
               {Site.url_scheme()}{@base_domain}/sites/{subdomain_value(@form[:subdomain].value)}
             </.link>

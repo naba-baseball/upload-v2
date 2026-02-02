@@ -1,39 +1,118 @@
-<div class="mx-auto max-w-2xl py-8">
-  <h1 class="text-4xl font-bold mb-4">Welcome to Upload</h1>
-  <p class="mb-4">This is a demo application.</p>
+<Layouts.app flash={@flash} current_user={@current_user}>
+  <div class="text-center space-y-8">
+    <%!-- Hero Section with Vintage Typography --%>
+    <div class="space-y-4">
+      <div class="vintage-ornament">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
 
-  <%= if @current_user do %>
-    <p>You are logged in as {@current_user.name}.</p>
-    <div class="mt-4">
-      <.link
-        navigate={~p"/dashboard"}
-        class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-      >
-        Go to Dashboard
-      </.link>
-      <%= if @current_user.role == "admin" do %>
-        <.link
-          navigate={~p"/admin/sites"}
-          class="ml-2 rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
-        >
-          Go to Admin Portal
-        </.link>
-      <% end %>
-      <.link
-        href={~p"/auth/signout"}
-        class="ml-2 rounded border border-gray-400 px-4 py-2 hover:bg-gray-100"
-      >
-        Sign out
-      </.link>
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-tight tracking-tight">
+        NABA Upload
+      </h1>
+
+      <div class="vintage-ornament">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
     </div>
-  <% else %>
-    <div class="mt-4">
-      <.link
-        href={~p"/auth/discord"}
-        class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-      >
-        Sign in with Discord
-      </.link>
+
+    <%!-- Main Content Area --%>
+    <%= if @current_user do %>
+      <%!-- Logged In State --%>
+      <div class="space-y-6 max-w-2xl mx-auto">
+        <div class="border-2 border-primary/30 rounded-lg p-6 bg-base-200/50">
+          <div class="flex items-center justify-center gap-4">
+            <%= if @current_user.avatar_url do %>
+              <img
+                src={@current_user.avatar_url}
+                alt={@current_user.name}
+                class="w-16 h-16 rounded-full border-4 border-primary shadow-lg"
+              />
+            <% end %>
+            <div class="text-left">
+              <p class="font-display text-lg text-base-content">Welcome back,</p>
+              <p class="font-display text-2xl">{@current_user.name}</p>
+              <p class="font-body text-sm text-neutral mt-1">
+                {if @current_user.role == "admin", do: "Team Manager", else: "Player"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Action Buttons --%>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <.link
+            navigate={~p"/dashboard"}
+            class="vintage-btn vintage-btn-primary w-full sm:w-auto"
+          >
+            <.icon name="hero-squares-2x2" class="w-5 h-5 mr-2" />
+            <span class="font-display">Visit Clubhouse</span>
+          </.link>
+
+          <%= if @current_user.role == "admin" do %>
+            <.link
+              navigate={~p"/admin/sites"}
+              class="vintage-btn vintage-btn-secondary w-full sm:w-auto"
+            >
+              <.icon name="hero-shield-check" class="w-5 h-5 mr-2" />
+              <span class="font-display">Manager's Office</span>
+            </.link>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <%!-- Guest State --%>
+      <div class="space-y-8 max-w-2xl mx-auto">
+        <%!-- Welcome Message --%>
+        <div class="prose prose-lg mx-auto">
+          <p class="font-body text-lg text-neutral leading-relaxed dropcap">
+            Step up to the plate and upload your baseball files with ease.
+            Our vintage-inspired portal brings the golden era of baseball to the digital age.
+            Whether you're sharing game footage, statistics, or team archives,
+            we've got you covered like a well-worn glove.
+          </p>
+        </div>
+
+        <%!-- Feature Cards --%>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="vintage-card p-4 text-center">
+            <.icon name="hero-cloud-arrow-up" class="w-8 h-8 mx-auto mb-2" />
+            <h3 class="font-display text-base-content">Easy Uploads</h3>
+            <p class="font-body text-sm text-neutral">Drag and drop your files</p>
+          </div>
+
+          <div class="vintage-card p-4 text-center">
+            <.icon name="hero-bell-alert" class="w-8 h-8 text-secondary mx-auto mb-2" />
+            <h3 class="font-display text-base-content">Notifications</h3>
+            <p class="font-body text-sm text-neutral">Stay in the loop</p>
+          </div>
+
+          <div class="vintage-card p-4 text-center">
+            <.icon name="hero-lock-closed" class="w-8 h-8 text-accent mx-auto mb-2" />
+            <h3 class="font-display text-base-content">Secure</h3>
+            <p class="font-body text-sm text-neutral">Your files are safe</p>
+          </div>
+        </div>
+
+        <%!-- CTA Section --%>
+        <div class="border-3 border-primary rounded-xl p-8 bg-gradient-to-b from-base-100 to-base-200">
+          <h2 class="font-display text-2xl mb-4">Enter the Ballpark</h2>
+          <p class="font-body text-neutral mb-6">
+            Sign in with your Discord account to access the upload portal.
+          </p>
+          <.link
+            href={~p"/auth/discord"}
+            class="vintage-btn vintage-btn-primary inline-flex items-center px-8 py-4 text-lg"
+          >
+            <.icon name="hero-user-circle" class="w-6 h-6 mr-3" />
+            <span class="font-display">Sign in with Discord</span>
+          </.link>
+        </div>
+      </div>
+    <% end %>
+
+    <%!-- Bottom Ornament --%>
+    <div class="vintage-ornament pt-8">
+      <div class="vintage-ornament-diamond"></div>
     </div>
-  <% end %>
-</div>
+  </div>
+</Layouts.app>

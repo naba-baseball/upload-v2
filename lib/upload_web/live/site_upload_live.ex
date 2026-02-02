@@ -124,7 +124,7 @@ defmodule UploadWeb.SiteUploadLive do
           </p>
           <.link
             href={~p"/auth/discord"}
-            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition-colors"
+            class="vintage-btn vintage-btn-primary inline-flex items-center gap-2"
           >
             <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" /> Sign in with Discord
           </.link>
@@ -132,34 +132,42 @@ defmodule UploadWeb.SiteUploadLive do
       </Layouts.app>
     <% else %>
       <Layouts.app flash={@flash} current_user={@current_user}>
-        <div class="mx-auto max-w-2xl py-8 px-4">
-          <div class="mb-6">
-            <.back_link navigate={~p"/dashboard"}>Back to Dashboard</.back_link>
-          </div>
+        <div class="mx-auto max-w-4xl">
+          <.back_link navigate={~p"/dashboard"} class="mb-6">Back to Dashboard</.back_link>
 
-          <.card variant="white">
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-1">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200">
+            <div class="p-8 pb-0">
+              <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                  <.icon name="hero-cloud-arrow-up" class="w-8 h-8" />
+                </div>
+                <h1 class="font-display text-3xl mb-2">
                   Upload to {@site.name}
                 </h1>
-                <.deployment_status
-                  status={@site.deployment_status}
-                  last_deployed_at={@site.last_deployed_at}
-                  error={@site.last_deployment_error}
-                />
-              </div>
-              <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                <.site_url_links site={@site} icon="hero-globe-alt" />
+                <div class="flex items-center justify-center gap-4 text-sm text-secondary">
+                  <.deployment_status
+                    status={@site.deployment_status}
+                    last_deployed_at={@site.last_deployed_at}
+                    error={@site.last_deployment_error}
+                  />
+                  <.site_url_links site={@site} />
+                </div>
               </div>
             </div>
 
-            <p class="mb-6 text-gray-600 dark:text-gray-400">
-              Upload a .tar.gz file containing the site assets.
-            </p>
+            <div class="vintage-ornament mx-8">
+              <div class="vintage-ornament-diamond"></div>
+            </div>
 
-            <.upload_form upload={@uploads.site_archive} />
-          </.card>
+            <div class="p-8 pt-4">
+              <p class="text-center mb-6 text-secondary">
+                Upload a .tar.gz file containing the site assets.
+              </p>
+              <div class="max-w-md mx-auto">
+                <.upload_form upload={@uploads.site_archive} />
+              </div>
+            </div>
+          </div>
         </div>
       </Layouts.app>
     <% end %>

@@ -37,42 +37,145 @@ defmodule UploadWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <span class="text-lg font-bold">Upload</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <.theme_toggle />
-          </li>
-          <%= if @current_user do %>
-            <li>
-              <span class="text-sm font-semibold">{@current_user.name}</span>
-            </li>
-            <li>
-              <a href={~p"/auth/signout"} class="btn btn-secondary btn-sm">
-                Sign out
+    <header class="border-b-4 border-primary bg-base-100">
+      <div class="px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <%!-- Logo Section --%>
+          <a href="/" class="flex items-center gap-3 group">
+            <%!-- Baseball Diamond Icon --%>
+            <div class="relative w-10 h-10 flex items-center justify-center">
+              <svg
+                viewBox="0 0 100 100"
+                class="w-full h-full group-hover:text-accent transition-colors duration-300"
+              >
+                <%!-- Diamond shape --%>
+                <polygon
+                  points="50,5 95,50 50,95 5,50"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <%!-- Baseball stitches --%>
+                <path
+                  d="M30 30 Q50 50 30 70"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-dasharray="4,3"
+                />
+                <path
+                  d="M70 30 Q50 50 70 70"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-dasharray="4,3"
+                />
+                <%!-- Center dot --%>
+                <circle cx="50" cy="50" r="6" fill="currentColor" />
+              </svg>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-display text-xl sm:text-2xl tracking-wide leading-none">
+                NABA
+              </span>
+              <span class="font-display text-xs sm:text-sm text-neutral tracking-widest uppercase">
+                Upload Portal
+              </span>
+            </div>
+          </a>
+
+          <%!-- Navigation Section --%>
+          <div class="flex items-center gap-4">
+            <%!-- Theme Toggle with Vintage Styling --%>
+            <div class="hidden sm:block">
+              <.theme_toggle />
+            </div>
+
+            <%!-- Ornamental Divider --%>
+            <div class="hidden md:flex items-center gap-2">
+              <div class="w-px h-8 bg-primary opacity-30"></div>
+            </div>
+
+            <%= if @current_user do %>
+              <div class="flex items-center gap-3">
+                <%!-- User Avatar with Baseball Frame --%>
+                <div class="hidden sm:flex items-center gap-2">
+                  <%= if @current_user.avatar_url do %>
+                    <img
+                      src={@current_user.avatar_url}
+                      alt={@current_user.name}
+                      class="w-10 h-10 rounded-full border-3 border-primary shadow-md"
+                    />
+                  <% end %>
+                  <div class="flex flex-col text-right">
+                    <span class="font-display text-sm text-base-content leading-tight">
+                      {@current_user.name}
+                    </span>
+                    <span class="text-xs text-neutral uppercase tracking-wider">
+                      {if @current_user.role == "admin", do: "Manager", else: "Player"}
+                    </span>
+                  </div>
+                </div>
+
+                <%!-- Admin Panel Button (only for admins) --%>
+                <%= if @current_user.role == "admin" do %>
+                  <a
+                    href={~p"/admin/sites"}
+                    class="vintage-btn vintage-btn-primary btn-sm px-4"
+                    title="Admin Panel"
+                  >
+                    <.icon name="hero-shield-check" class="w-4 h-4 sm:mr-2" />
+                    <span class="hidden sm:inline">Admin</span>
+                  </a>
+                <% end %>
+
+                <%!-- Sign Out Button --%>
+                <a
+                  href={~p"/auth/signout"}
+                  class="vintage-btn vintage-btn-secondary btn-sm px-4"
+                >
+                  <.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4 sm:mr-2" />
+                  <span class="hidden sm:inline">Sign Out</span>
+                </a>
+              </div>
+            <% else %>
+              <%!-- Sign In Button --%>
+              <a
+                href={~p"/auth/discord"}
+                class="vintage-btn vintage-btn-primary btn-sm px-6"
+              >
+                <.icon name="hero-user-circle" class="w-4 h-4 mr-2" />
+                <span class="font-display">Enter Ballpark</span>
               </a>
-            </li>
-          <% else %>
-            <li>
-              <a href={~p"/auth/discord"} class="btn btn-primary btn-sm">
-                Sign in with Discord
-              </a>
-            </li>
-          <% end %>
-        </ul>
+            <% end %>
+          </div>
+        </div>
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block) || @inner_content}
+    <%!-- Main Content Area with Vintage Card Container --%>
+    <main class="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div class="mx-auto max-w-4xl">
+        <div class="sm:p-8 lg:p-12 animate-vintage-fade-in">
+          {render_slot(@inner_block) || @inner_content}
+        </div>
       </div>
     </main>
+
+    <%!-- Footer with Vintage Styling --%>
+    <footer class="border-t-4 border-primary bg-base-200 mt-auto">
+      <div class="px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-2 text-neutral">
+            <.icon name="hero-trophy" class="w-5 h-5 text-accent" />
+            <span class="font-display text-sm">Est. 1920</span>
+          </div>
+          <div class="vintage-ornament w-full sm:w-auto">
+            <div class="vintage-ornament-diamond"></div>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <.flash_group flash={@flash} />
     """
@@ -123,36 +226,47 @@ defmodule UploadWeb.Layouts do
 
   @doc """
   Provides dark vs light theme toggle based on themes defined in app.css.
+  Styled with vintage baseball aesthetic - like a stadium lighting control.
 
   See <head> in root.html.heex which applies the theme before page load.
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme-mode=light]_&]:left-1/3 [[data-theme-mode=dark]_&]:left-2/3 transition-[left]" />
+    <div class="relative flex items-center bg-base-300 rounded-lg border-2 border-primary p-1 gap-1">
+      <%!-- Sliding Indicator --%>
+      <div class="absolute h-[calc(100%-8px)] w-[calc(33.333%-4px)] rounded-md bg-primary transition-all duration-300 ease-out
+        left-1 [[data-theme-mode=system]_&]:left-1
+        [[data-theme-mode=light]_&]:left-[calc(33.333%+2px)]
+        [[data-theme-mode=dark]_&]:left-[calc(66.666%+3px)]" />
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="relative z-10 flex items-center justify-center p-2 w-10 h-10 rounded-md transition-colors duration-200
+          [[data-theme-mode=system]_&]:text-primary-content"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
+        title="Stadium Auto-Lighting"
       >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-computer-desktop" class="w-5 h-5" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="relative z-10 flex items-center justify-center p-2 w-10 h-10 rounded-md transition-colors duration-200
+          [[data-theme-mode=light]_&]:text-primary-content"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
+        title="Day Game"
       >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-sun" class="w-5 h-5" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="relative z-10 flex items-center justify-center p-2 w-10 h-10 rounded-md transition-colors duration-200
+          [[data-theme-mode=dark]_&]:text-primary-content"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
+        title="Night Game"
       >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-moon" class="w-5 h-5" />
       </button>
     </div>
     """

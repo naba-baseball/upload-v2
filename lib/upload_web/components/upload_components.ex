@@ -29,12 +29,12 @@ defmodule UploadWeb.UploadComponents do
         <.live_file_input
           upload={@upload}
           required
-          class="block w-full text-sm text-gray-500 dark:text-gray-400
+          class="block w-full text-sm text-base-content/70
           file:mr-4 file:py-2 file:px-4
           file:rounded-full file:border-0
           file:text-sm file:font-semibold
-          file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-300
-          hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900"
+          file:bg-primary/10 dark:file:bg-primary/10
+          hover:file:bg-primary/20 dark:hover:file:bg-primary/20"
         />
       </div>
 
@@ -48,9 +48,9 @@ defmodule UploadWeb.UploadComponents do
               <span class="text-sm text-gray-500 dark:text-gray-400">{entry.progress}%</span>
             </figure>
 
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div class="w-full bg-base-300 rounded-full h-2.5">
               <div
-                class="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full transition-all duration-300"
+                class="bg-accent h-2.5 rounded-full transition-all duration-300"
                 style={"width: #{entry.progress}%"}
               >
               </div>
@@ -75,7 +75,7 @@ defmodule UploadWeb.UploadComponents do
         type="submit"
         disabled={@upload.entries == []}
         phx-disable-with="Uploading..."
-        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="vintage-btn vintage-btn-primary inline-flex items-center gap-2 px-6 py-3"
       >
         <.icon name="hero-arrow-up-tray" class="w-5 h-5" /> Upload Archive
       </button>
@@ -112,7 +112,12 @@ defmodule UploadWeb.UploadComponents do
       </span>
 
       <%= if @status == "deployed" && @last_deployed_at do %>
-        <span class="text-xs text-gray-500 dark:text-gray-400">
+        <span
+          id={"deployment-time-#{@last_deployed_at}"}
+          phx-hook="LocalTime"
+          data-timestamp={@last_deployed_at}
+          class="text-xs text-base-content/70"
+        >
           {format_time(@last_deployed_at)}
         </span>
       <% end %>
@@ -148,8 +153,8 @@ defmodule UploadWeb.UploadComponents do
 
   defp format_time(nil), do: ""
 
-  defp format_time(datetime) do
-    Calendar.strftime(datetime, "%b %d, %H:%M")
+  defp format_time(_datetime) do
+    ""
   end
 
   @doc """
@@ -158,12 +163,10 @@ defmodule UploadWeb.UploadComponents do
   ## Examples
 
       <.site_url_links site={@site} />
-      <.site_url_links site={site} icon="hero-arrow-top-right-on-square" />
       <.site_url_links site={@site} display="full_url" />
 
   """
   attr :site, :map, required: true
-  attr :icon, :string, default: nil, doc: "Optional icon name to display before each link"
 
   attr :display, :string,
     default: "domain",
@@ -175,16 +178,9 @@ defmodule UploadWeb.UploadComponents do
       <%= if @site.routing_mode in ["subdomain", "subpath"] do %>
         <.link
           href={Upload.Sites.Site.format_site_url(@site)}
-          target="_blank"
           rel="noopener noreferrer"
-          class={[
-            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
-            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
-          ]}
+          class="block font-mono hover:text-accent hover:underline"
         >
-          <%= if @icon do %>
-            <.icon name={@icon} class="w-4 h-4" />
-          <% end %>
           <%= if @display == "full_url" do %>
             {Upload.Sites.Site.format_site_url(@site)}
           <% else %>
@@ -199,16 +195,9 @@ defmodule UploadWeb.UploadComponents do
       <%= if @site.routing_mode == "both" do %>
         <.link
           href={Upload.Sites.Site.format_site_url(@site, :subdomain)}
-          target="_blank"
           rel="noopener noreferrer"
-          class={[
-            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
-            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
-          ]}
+          class="block font-mono hover:text-accent hover:underline"
         >
-          <%= if @icon do %>
-            <.icon name={@icon} class="w-4 h-4" />
-          <% end %>
           <%= if @display == "full_url" do %>
             {Upload.Sites.Site.format_site_url(@site, :subdomain)}
           <% else %>
@@ -217,16 +206,9 @@ defmodule UploadWeb.UploadComponents do
         </.link>
         <.link
           href={Upload.Sites.Site.format_site_url(@site, :subpath)}
-          target="_blank"
           rel="noopener noreferrer"
-          class={[
-            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
-            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
-          ]}
+          class="block font-mono hover:text-accent hover:underline"
         >
-          <%= if @icon do %>
-            <.icon name={@icon} class="w-4 h-4" />
-          <% end %>
           <%= if @display == "full_url" do %>
             {Upload.Sites.Site.format_site_url(@site, :subpath)}
           <% else %>
