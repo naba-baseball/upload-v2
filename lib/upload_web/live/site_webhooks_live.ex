@@ -366,13 +366,22 @@ defmodule UploadWeb.SiteWebhooksLive do
                       <.icon name={webhook_icon(webhook)} class="w-5 h-5" />
                     </div>
                   </div>
-                  <div class="flex-1">
+                  <div class="flex-1 min-w-0">
                     <h3 class="font-display text-lg mb-1">
-                      {webhook.description || webhook.url}
+                      {webhook.description || truncate_url(webhook.url)}
                     </h3>
-                    <p class="text-sm text-secondary font-body break-all">
-                      {webhook.url}
-                    </p>
+                    <div class="relative group/url">
+                      <p class="text-sm text-secondary font-body truncate cursor-help">
+                        {webhook.url}
+                      </p>
+                      <div class="absolute left-0 top-full mt-2 z-50 hidden group-hover/url:block">
+                        <div class="vintage-card bg-base-100 shadow-xl p-3 max-w-md">
+                          <p class="text-sm text-base-content font-body break-all">
+                            {webhook.url}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -528,4 +537,12 @@ defmodule UploadWeb.SiteWebhooksLive do
 
   defp webhook_icon(%{is_active: true}), do: "hero-bell"
   defp webhook_icon(%{is_active: false}), do: "hero-bell-slash"
+
+  defp truncate_url(url, max_length \\ 50) do
+    if String.length(url) > max_length do
+      String.slice(url, 0, max_length) <> "..."
+    else
+      url
+    end
+  end
 end
