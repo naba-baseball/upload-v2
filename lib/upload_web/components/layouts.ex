@@ -46,7 +46,7 @@ defmodule UploadWeb.Layouts do
             <div class="relative w-10 h-10 flex items-center justify-center">
               <svg
                 viewBox="0 0 100 100"
-                class="w-full h-full text-primary group-hover:text-accent transition-colors duration-300"
+                class="w-full h-full group-hover:text-accent transition-colors duration-300"
               >
                 <%!-- Diamond shape --%>
                 <polygon
@@ -75,7 +75,7 @@ defmodule UploadWeb.Layouts do
               </svg>
             </div>
             <div class="flex flex-col">
-              <span class="font-display text-xl sm:text-2xl text-primary tracking-wide leading-none">
+              <span class="font-display text-xl sm:text-2xl tracking-wide leading-none">
                 NABA
               </span>
               <span class="font-heading text-xs sm:text-sm text-neutral tracking-widest uppercase">
@@ -92,7 +92,7 @@ defmodule UploadWeb.Layouts do
             </div>
 
             <%!-- Ornamental Divider --%>
-            <div class="hidden md:flex items-center gap-2 text-primary">
+            <div class="hidden md:flex items-center gap-2">
               <div class="w-px h-8 bg-primary opacity-30"></div>
             </div>
 

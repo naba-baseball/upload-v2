@@ -131,7 +131,7 @@ defmodule UploadWeb.DashboardLive do
           </p>
           <.link
             href={~p"/auth/discord"}
-            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition-colors"
+            class="vintage-btn vintage-btn-primary inline-flex items-center gap-2"
           >
             <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" /> Sign in with Discord
           </.link>
@@ -151,7 +151,7 @@ defmodule UploadWeb.DashboardLive do
               <div class="p-8 pb-0">
                 <div class="flex items-center justify-between mb-6">
                   <div>
-                    <h2 class="font-heading text-3xl font-bold text-primary mb-2">
+                    <h2 class="font-heading text-3xl font-bold mb-2">
                       {@single_site.name}
                     </h2>
                     <div class="flex items-center gap-4 text-sm text-secondary">
@@ -174,7 +174,7 @@ defmodule UploadWeb.DashboardLive do
 
               <div class="p-8 pt-4">
                 <div class="flex items-center justify-between mb-6">
-                  <h3 class="font-heading text-xl text-primary">Quick Actions</h3>
+                  <h3 class="font-heading text-xl">Quick Actions</h3>
                 </div>
                 <div class="flex flex-wrap gap-4">
                   <.link
@@ -191,9 +191,9 @@ defmodule UploadWeb.DashboardLive do
               <div class="p-8">
                 <div class="text-center mb-6">
                   <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-                    <.icon name="hero-cloud-arrow-up" class="w-8 h-8 text-primary" />
+                    <.icon name="hero-cloud-arrow-up" class="w-8 h-8" />
                   </div>
-                  <h3 class="font-heading text-2xl font-bold text-primary mb-2">
+                  <h3 class="font-heading text-2xl font-bold mb-2">
                     Upload Site Archive
                   </h3>
                   <p class="text-secondary">
@@ -270,9 +270,9 @@ defmodule UploadWeb.DashboardLive do
           <% else %>
             <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200 text-center py-12">
               <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
-                <.icon name="hero-inbox" class="w-10 h-10 text-primary" />
+                <.icon name="hero-inbox" class="w-10 h-10" />
               </div>
-              <h3 class="font-heading text-2xl font-bold text-primary mb-4">No Sites Yet</h3>
+              <h3 class="font-heading text-2xl font-bold mb-4">No Sites Yet</h3>
               <p class="text-secondary max-w-md mx-auto">
                 You haven't been assigned to any sites yet. Please contact an administrator to get access.
               </p>

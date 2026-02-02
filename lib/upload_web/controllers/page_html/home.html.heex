@@ -6,7 +6,7 @@
         <div class="vintage-ornament-diamond"></div>
       </div>
 
-      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-primary leading-tight tracking-tight">
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-tight tracking-tight">
         NABA Upload
       </h1>
 
@@ -34,7 +34,7 @@
             <% end %>
             <div class="text-left">
               <p class="font-heading text-lg font-bold text-base-content">Welcome back,</p>
-              <p class="font-display text-2xl text-primary">{@current_user.name}</p>
+              <p class="font-display text-2xl">{@current_user.name}</p>
               <p class="font-body text-sm text-neutral mt-1">
                 {if @current_user.role == "admin", do: "Team Manager", else: "Player"}
               </p>
@@ -79,7 +79,7 @@
         <%!-- Feature Cards --%>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="vintage-card p-4 text-center">
-            <.icon name="hero-cloud-arrow-up" class="w-8 h-8 text-primary mx-auto mb-2" />
+            <.icon name="hero-cloud-arrow-up" class="w-8 h-8 mx-auto mb-2" />
             <h3 class="font-heading font-bold text-base-content">Easy Uploads</h3>
             <p class="font-body text-sm text-neutral">Drag and drop your files</p>
           </div>
@@ -99,7 +99,7 @@
 
         <%!-- CTA Section --%>
         <div class="corner-decoration border-3 border-primary rounded-xl p-8 bg-gradient-to-b from-base-100 to-base-200">
-          <h2 class="font-display text-2xl text-primary mb-4">Enter the Ballpark</h2>
+          <h2 class="font-display text-2xl mb-4">Enter the Ballpark</h2>
           <p class="font-body text-neutral mb-6">
             Sign in with your Discord account to access the upload portal.
           </p>

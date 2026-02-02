@@ -63,7 +63,7 @@ defmodule UploadWeb.HomeLive do
         <div class="mx-auto max-w-4xl flex sm:flex-row items-center justify-between sm:justify-end gap-4">
           <.link
             navigate={~p"/dashboard"}
-            class="inline-flex justify-end items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200"
+            class="inline-flex justify-end items-center gap-2 text-sm font-medium hover:text-accent"
           >
             Manage your site <.icon name="hero-arrow-right" class="w-4 h-4" />
           </.link>

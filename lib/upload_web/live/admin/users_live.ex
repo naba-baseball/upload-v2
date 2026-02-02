@@ -69,18 +69,17 @@ defmodule UploadWeb.Admin.UsersLive do
                   class={[
                     "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150",
                     if(user_has_site?(user, site.id),
-                      do:
-                        "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500 dark:ring-indigo-400",
+                      do: "bg-primary/20 dark:bg-primary/20 ring-2 ring-primary dark:ring-primary",
                       else:
-                        "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        "bg-base-200 dark:bg-base-800 text-secondary dark:text-secondary hover:bg-primary/10 dark:hover:bg-primary/10"
                     )
                   ]}
                 >
                   <span class={[
                     "w-4 h-4 rounded border-2 flex items-center justify-center transition-colors",
                     if(user_has_site?(user, site.id),
-                      do: "bg-indigo-500 border-indigo-500 dark:bg-indigo-400 dark:border-indigo-400",
-                      else: "border-gray-400 dark:border-gray-500"
+                      do: "bg-primary border-primary dark:bg-primary dark:border-primary",
+                      else: "border-base-300 dark:border-base-600"
                     )
                   ]}>
                     <.icon

@@ -29,12 +29,12 @@ defmodule UploadWeb.UploadComponents do
         <.live_file_input
           upload={@upload}
           required
-          class="block w-full text-sm text-gray-500 dark:text-gray-400
+          class="block w-full text-sm text-base-content/70
           file:mr-4 file:py-2 file:px-4
           file:rounded-full file:border-0
           file:text-sm file:font-semibold
-          file:bg-indigo-50 dark:file:bg-indigo-900/50 file:text-indigo-700 dark:file:text-indigo-300
-          hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900"
+          file:bg-primary/10 dark:file:bg-primary/10
+          hover:file:bg-primary/20 dark:hover:file:bg-primary/20"
         />
       </div>
 
@@ -48,9 +48,9 @@ defmodule UploadWeb.UploadComponents do
               <span class="text-sm text-gray-500 dark:text-gray-400">{entry.progress}%</span>
             </figure>
 
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div class="w-full bg-base-300 rounded-full h-2.5">
               <div
-                class="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full transition-all duration-300"
+                class="bg-accent h-2.5 rounded-full transition-all duration-300"
                 style={"width: #{entry.progress}%"}
               >
               </div>
@@ -75,7 +75,7 @@ defmodule UploadWeb.UploadComponents do
         type="submit"
         disabled={@upload.entries == []}
         phx-disable-with="Uploading..."
-        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="vintage-btn vintage-btn-primary inline-flex items-center gap-2 px-6 py-3"
       >
         <.icon name="hero-arrow-up-tray" class="w-5 h-5" /> Upload Archive
       </button>
@@ -178,7 +178,7 @@ defmodule UploadWeb.UploadComponents do
           target="_blank"
           rel="noopener noreferrer"
           class={[
-            "text-info font-mono hover:underline",
+            "font-mono hover:text-accent hover:underline",
             if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
           ]}
         >
@@ -202,7 +202,7 @@ defmodule UploadWeb.UploadComponents do
           target="_blank"
           rel="noopener noreferrer"
           class={[
-            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
+            "font-mono hover:text-accent hover:underline",
             if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
           ]}
         >
@@ -220,7 +220,7 @@ defmodule UploadWeb.UploadComponents do
           target="_blank"
           rel="noopener noreferrer"
           class={[
-            "text-indigo-600 dark:text-indigo-400 font-mono hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline",
+            "font-mono hover:text-accent hover:underline",
             if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
           ]}
         >

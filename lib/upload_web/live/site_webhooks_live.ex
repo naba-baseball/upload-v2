@@ -175,18 +175,26 @@ defmodule UploadWeb.SiteWebhooksLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-4xl py-8 px-4">
-      <div class="mb-8 flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <div class="mb-8">
+        <div class="vintage-ornament mb-6">
+          <div class="vintage-ornament-diamond"></div>
+        </div>
+        <div class="text-center">
+          <h1 class="font-display text-3xl font-bold mb-2">
             {@site.name} Webhooks
           </h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">
+          <p class="text-secondary">
             Configure notifications for deployment events
           </p>
         </div>
-        <.link navigate={~p"/dashboard"} class="text-indigo-600 hover:text-indigo-700 font-medium">
-          ← Back to Dashboard
-        </.link>
+        <div class="mt-6 text-center">
+          <.link
+            navigate={~p"/dashboard"}
+            class="inline-flex items-center gap-1 text-secondary hover:text-primary transition-colors"
+          >
+            <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Dashboard
+          </.link>
+        </div>
       </div>
 
       <%= if @editing_webhook do %>
@@ -205,140 +213,184 @@ defmodule UploadWeb.SiteWebhooksLive do
 
   defp webhook_form(assigns) do
     ~H"""
-    <.card variant="white">
-      <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-        {if @webhook.id, do: "Edit Webhook", else: "New Webhook"}
-      </h2>
-
-      <.form for={@form} id="webhook-form" phx-submit="save" class="space-y-6">
-        <div>
-          <.input
-            field={@form[:url]}
-            type="url"
-            label="Webhook URL"
-            placeholder="https://discord.com/api/webhooks/..."
-            required
-          />
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            For Discord, copy the webhook URL from:
-          </p>
-          <ol class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            <li>(hover over a channel) Edit channel > Integrations > Webhooks</li>
-          </ol>
+    <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200 overflow-hidden">
+      <div class="p-8 pb-0">
+        <div class="vintage-ornament mb-4">
+          <div class="vintage-ornament-diamond"></div>
         </div>
+        <h2 class="font-heading text-2xl font-bold text-center mb-2">
+          {if @webhook.id, do: "Edit Webhook", else: "New Webhook"}
+        </h2>
+      </div>
 
-        <div>
-          <.input
-            field={@form[:description]}
-            type="text"
-            label="Description (optional)"
-            placeholder="e.g., Discord #deployments channel"
-          />
-        </div>
+      <div class="vintage-ornament mx-8">
+        <div class="vintage-ornament-diamond"></div>
+      </div>
 
-        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <.input
-            field={@form[:role_mention]}
-            type="text"
-            label="Role Mention (optional)"
-            placeholder="@everyone or <@&123456789>"
-          />
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Mention a role when webhook fires. Examples: <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">@everyone</code>, <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">@here</code>, or a user/role ID like
-            <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
-              &lt;@&amp;123456789&gt;
-            </code>
-          </p>
-        </div>
+      <div class="p-8 pt-4">
+        <.form for={@form} id="webhook-form" phx-submit="save" class="space-y-6">
+          <div>
+            <.input
+              field={@form[:url]}
+              type="url"
+              label="Webhook URL"
+              placeholder="https://discord.com/api/webhooks/..."
+              required
+            />
+            <p class="text-sm text-secondary mt-1">
+              For Discord, copy the webhook URL from:
+            </p>
+            <ol class="text-sm text-secondary mt-1">
+              <li>(hover over a channel) Edit channel > Integrations > Webhooks</li>
+            </ol>
+          </div>
 
-        <div>
-          <span class="label">Events</span>
-          <div class="space-y-2 mt-2">
+          <div>
+            <.input
+              field={@form[:description]}
+              type="text"
+              label="Description (optional)"
+              placeholder="e.g., Discord #deployments channel"
+            />
+          </div>
+
+          <div class="pt-4 border-t-2 border-primary/20">
+            <.input
+              field={@form[:role_mention]}
+              type="text"
+              label="Role Mention (optional)"
+              placeholder="@everyone or <@&123456789>"
+            />
+            <p class="text-sm text-secondary mt-1">
+              Mention a role when webhook fires. Examples: <code class="bg-base-200 px-1 py-0.5 rounded">@everyone</code>, <code class="bg-base-200 px-1 py-0.5 rounded">@here</code>, or a user/role ID like
+              <code class="bg-base-200 px-1 py-0.5 rounded">
+                &lt;@&amp;123456789&gt;
+              </code>
+            </p>
+          </div>
+
+          <div>
+            <span class="label font-heading font-bold text-base-content">Events</span>
+            <div class="space-y-2 mt-2">
+              <label class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="site_webhook[events][]"
+                  value="deployment.success"
+                  checked={"deployment.success" in (@form[:events].value || [])}
+                  class="rounded border-gray-300 checkbox-checkbox-sm"
+                />
+                <span class="text-base-content">Deployment Successful</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="site_webhook[events][]"
+                  value="deployment.failed"
+                  checked={"deployment.failed" in (@form[:events].value || [])}
+                  class="rounded border-gray-300 checkbox-checkbox-sm"
+                />
+                <span class="text-base-content">Deployment Failed</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
             <label class="flex items-center gap-2">
               <input
                 type="checkbox"
-                name="site_webhook[events][]"
-                value="deployment.success"
-                checked={"deployment.success" in (@form[:events].value || [])}
-                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                name="site_webhook[is_active]"
+                value="true"
+                checked={@form[:is_active].value}
+                class="rounded checkbox-checkbox-sm"
               />
-              <span class="text-gray-700 dark:text-gray-300">Deployment Successful</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="site_webhook[events][]"
-                value="deployment.failed"
-                checked={"deployment.failed" in (@form[:events].value || [])}
-                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span class="text-gray-700 dark:text-gray-300">Deployment Failed</span>
+              <span class="text-base-content">Active</span>
             </label>
           </div>
-        </div>
 
-        <div>
-          <label class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="site_webhook[is_active]"
-              value="true"
-              checked={@form[:is_active].value}
-              class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            <span class="text-gray-700 dark:text-gray-300">Active</span>
-          </label>
-        </div>
-
-        <div class="flex gap-4 pt-4">
-          <.button type="submit">Save Webhook</.button>
-          <.button type="button" variant="secondary" phx-click="cancel">Cancel</.button>
-        </div>
-      </.form>
-    </.card>
+          <div class="flex gap-4 pt-4">
+            <.button type="submit">Save Webhook</.button>
+            <.button type="button" variant="secondary" phx-click="cancel">Cancel</.button>
+          </div>
+        </.form>
+      </div>
+    </div>
     """
   end
 
   defp webhooks_list(assigns) do
     ~H"""
     <div class="space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Configured Webhooks</h2>
-        <.button phx-click="new" variant="secondary">+ Add Webhook</.button>
+      <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="inline-flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
+              <.icon name="hero-bell-alert" class="w-5 h-5" />
+            </div>
+            <h2 class="font-heading text-xl font-bold">
+              Configured Webhooks
+            </h2>
+          </div>
+          <.button phx-click="new" variant="secondary">
+            <.icon name="hero-plus" class="w-4 h-4" /> Add Webhook
+          </.button>
+        </div>
       </div>
 
       <%= if @webhooks == [] do %>
-        <.card variant="white">
-          <.empty_state icon="hero-bell-slash">
+        <div class="vintage-card bg-gradient-to-br from-base-100 to-base-200 text-center py-12">
+          <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
+            <.icon name="hero-bell-slash" class="w-10 h-10" />
+          </div>
+          <h3 class="font-heading text-2xl font-bold mb-4">No Webhooks Yet</h3>
+          <p class="text-secondary max-w-md mx-auto">
             No webhooks configured. Add a webhook to receive deployment notifications.
-          </.empty_state>
-        </.card>
+          </p>
+        </div>
       <% else %>
-        <div class="space-y-4">
-          <.card :for={webhook <- @webhooks} variant="white" class="p-6">
+        <div class="grid gap-4">
+          <.card
+            :for={webhook <- @webhooks}
+            variant="default"
+            hover
+            class="relative !overflow-visible"
+          >
             <div class="flex items-start justify-between">
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                    {webhook.description || webhook.url}
-                  </h3>
+                <div class="flex items-center gap-4 mb-4">
+                  <div class={[
+                    "vintage-surface rounded-full w-fit",
+                    if(webhook.is_active, do: "pe-2.5")
+                  ]}>
+                    <div class="inline-flex items-center justify-center px-3 py-1 bg-primary/10 rounded-full">
+                      <.icon name={webhook_icon(webhook)} class="w-5 h-5" />
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-heading text-lg font-bold mb-1">
+                      {webhook.description || webhook.url}
+                    </h3>
+                    <p class="text-sm text-secondary font-mono truncate">
+                      {webhook.url}
+                    </p>
+                  </div>
                 </div>
 
-                <p class="text-sm text-gray-600 dark:text-gray-400 font-mono truncate mb-2">
-                  {webhook.url}
-                </p>
-
-                <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  <span>
-                    Events: {Enum.join(webhook.events, ", ")}
-                  </span>
+                <div class="space-y-2 mb-4 text-sm text-secondary">
+                  <div class="flex items-center gap-2">
+                    <.icon name="hero-bell" class="w-4 h-4" />
+                    <span>Events: {Enum.join(webhook.events, ", ")}</span>
+                  </div>
                   <%= if webhook.last_triggered_at do %>
-                    <span>
-                      Last triggered: {Calendar.strftime(
-                        webhook.last_triggered_at,
-                        "%Y-%m-%d %H:%M UTC"
-                      )}
-                    </span>
+                    <div class="flex items-center gap-2">
+                      <.icon name="hero-clock" class="w-4 h-4" />
+                      <span>
+                        Last triggered: {Calendar.strftime(
+                          webhook.last_triggered_at,
+                          "%Y-%m-%d %H:%M UTC"
+                        )}
+                      </span>
+                    </div>
                   <% end %>
                 </div>
 
@@ -391,7 +443,7 @@ defmodule UploadWeb.SiteWebhooksLive do
                 <% end %>
               </div>
 
-              <div class="flex items-center gap-2 ml-4">
+              <div class="flex items-center gap-2 ml-4 flex-col">
                 <%= if @test_result && @test_result.webhook_id == webhook.id do %>
                   <button
                     type="button"
@@ -416,8 +468,8 @@ defmodule UploadWeb.SiteWebhooksLive do
                   </button>
                 <% end %>
                 <%= if @testing_webhook_id == webhook.id do %>
-                  <span class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="inline-block w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin">
+                  <span class="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary">
+                    <span class="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin">
                     </span>
                     Testing...
                   </span>
@@ -425,7 +477,7 @@ defmodule UploadWeb.SiteWebhooksLive do
                   <button
                     phx-click="test_webhook"
                     phx-value-id={webhook.id}
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-secondary hover:text-primary transition-colors"
                   >
                     <.icon name="hero-bolt" class="w-4 h-4" />
                     <span>Test</span>
@@ -435,33 +487,17 @@ defmodule UploadWeb.SiteWebhooksLive do
                   phx-click="toggle"
                   phx-value-id={webhook.id}
                   class={[
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
-                    if(webhook.is_active,
-                      do:
-                        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800",
-                      else:
-                        "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    )
+                    "vintage-btn vintage-btn-secondary text-sm px-4 py-2",
+                    webhook.is_active && "!bg-success !border-success"
                   ]}
                   title={if webhook.is_active, do: "Click to disable", else: "Click to enable"}
                 >
-                  <span class={[
-                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out",
-                    webhook.is_active && "bg-green-500",
-                    !webhook.is_active && "bg-gray-300 dark:bg-gray-500"
-                  ]}>
-                    <span class={[
-                      "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                      webhook.is_active && "translate-x-4",
-                      !webhook.is_active && "translate-x-0"
-                    ]} />
-                  </span>
-                  <span>{if webhook.is_active, do: "On", else: "Off"}</span>
+                  {if webhook.is_active, do: "Active", else: "Inactive"}
                 </button>
                 <button
                   phx-click="edit"
                   phx-value-id={webhook.id}
-                  class="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  class="p-2 text-secondary hover:text-primary"
                   title="Edit"
                 >
                   <.icon name="hero-pencil" class="w-5 h-5" />
@@ -470,7 +506,7 @@ defmodule UploadWeb.SiteWebhooksLive do
                   phx-click="delete"
                   phx-value-id={webhook.id}
                   data-confirm="Are you sure you want to delete this webhook?"
-                  class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                  class="p-2 text-secondary hover:text-error"
                   title="Delete"
                 >
                   <.icon name="hero-trash" class="w-5 h-5" />
@@ -489,4 +525,7 @@ defmodule UploadWeb.SiteWebhooksLive do
 
   defp response_status_class(_status),
     do: "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200"
+
+  defp webhook_icon(%{is_active: true}), do: "hero-bell"
+  defp webhook_icon(%{is_active: false}), do: "hero-bell-slash"
 end
