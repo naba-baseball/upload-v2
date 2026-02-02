@@ -220,13 +220,173 @@ custom classes must fully style the input
         {end}
       </div>
 <!-- phoenix:html-end -->
-
 <!-- phoenix:liveview-start -->
 ## Phoenix LiveView guidelines
 
-- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
+- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use `<.link navigate={href}>` and `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
 - **Avoid LiveComponent's** unless you have a strong, specific need for them
-- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live "/weather", WeatherLive`
+- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you Go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live "/weather", WeatherLive`
+- Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module
+- Out of the box **only** the app.js and app.css bundles are supported**
+  - You cannot reference an external vendor'd script `src` or link `href` in the layouts
+  - You must import the vendor deps into app.js and app.css to use them
+  - **Never** write inline <script>custom js</script> tags within templates
+  - **Never** use `<.live_reload/>` in your templates. Instead you should set the `live_reload_url:` config option in your endpoint's `live_reload` section. If you are using a different port for Phoenix than the default 4000, set the `pattern:` key as well. See `mix phx.gen.live` templates for examples.
+  - The `<.live_title>` component is used for SEO, this component should be inside the `<head>` tag of `root.html.heex`
+  - If you want to disable `live_reload`, set `live_reload: false` in your endpoint config
+  - Phoenix v1.8 ships with new error handling; you might get console errors about `process: crash`. This is expected behaviour and safe to ignore. If you want to handle them, use `Phoenix.LiveView.RenderError` component
+- **Never** trigger navigation from a `handle_info/2` callback, instead use `push_navigate/2` from a `handle_event/3` callback after an event is handled
+
+## 1920s Vintage Baseball Design System
+
+This project uses a distinctive **1920s vintage baseball aesthetic** to create a memorable upload portal experience. The design is inspired by classic baseball cards, stadium programs, and the golden era of America's pastime.
+
+### Design Philosophy
+- **Tone**: Nostalgic vintage baseball with period-appropriate typography and colors
+- **Aesthetic**: Cream paper, navy blue primary, vintage crimson accents, baseball stitch patterns
+- **Feeling**: Like handling a vintage baseball card - premium, authentic, and distinctive
+
+### Core Design Elements
+
+#### Typography System
+- **Display Font**: `Rye` - For large headings, has that authentic vintage sign-painted feel
+- **Heading Font**: `Playfair Display` - For secondary headings, classic serif with elegant curves  
+- **Body Font**: `Libre Baskerville` - For content, warm and readable like vintage printed materials
+
+#### Color Palette
+- **Light Mode**: 
+  - Base: Cream paper (#F5F1E8)
+  - Primary: Deep navy blue (#1B365D) - like vintage team uniforms
+  - Secondary: Vintage crimson (#8B2332) - classic baseball red
+  - Accent: Baseball stitch red (#C41E3A)
+  - Text: Warm sepia tones for authentic aged paper feel
+
+- **Dark Mode**:
+  - Base: Stadium night (#1A1A2E) - like playing under lights
+  - Primary: Stadium light blue (#3D5A80)
+  - Secondary: Ballpark red (#A23B3B)
+  - Accent: Bright stadium accent (#E63946)
+  - Text: Warm stadium lighting (#E8E6E1)
+
+#### Signature Components
+
+##### Vintage Card System
+- **Base**: Baseball-stitched borders with cream/aged paper background
+- **Pattern**: Red baseball stitch patterns on horizontal edges
+- **Texture**: Subtle paper noise overlay for authentic aged feel
+- **Shadows**: Pressed card effect with inset highlights
+
+##### Button System  
+- **Style**: 3D pressable buttons like vintage baseball memorabilia
+- **Typography**: Uppercase, letter-spaced, font-heading family
+- **States**: Pressed state with shadow depth changes
+- **Variants**: Primary (navy), secondary (crimson), ghost (transparent)
+
+##### Theme Toggle
+- **Light**: "Day Game" - classic afternoon baseball
+- **Dark**: "Night Game" - stadium under lights  
+- **Auto**: "Stadium Auto-Lighting" - follows system preference
+- **Design**: Slider-style toggle with moving indicator
+
+##### Ornamental Elements
+- **Dividers**: Vintage line dividers with accent diamond center
+- **Corners**: Decorative corner flourishes for premium cards
+- **Stitch Patterns**: Red dashed lines mimicking baseball stitching
+- **Paper Texture**: Subtle noise overlays throughout interface
+
+### Animation System
+- **Page Entry**: Vintage fade-in with upward movement
+- **Hover Effects**: Card lift and shadow enhancement
+- **Button Press**: 3D depth movement with shadow changes
+- **Micro-interactions**: Subtle opacity and transform transitions
+
+### Layout Patterns
+- **Header**: Baseball diamond logo with vintage typography hierarchy
+- **Cards**: All content wrapped in vintage-card containers
+- **Navigation**: Theme toggle with baseball-themed labels
+- **Footer**: "Est. 1920" tagline and vintage quote
+
+### Consistency Guidelines
+
+#### ✅ Always Use
+```elixir
+# Display headings (hero, main titles)
+<h1 class="font-display text-4xl text-primary">NABA Upload</h1>
+
+# Section headings  
+<h2 class="font-heading text-2xl text-secondary">The Clubhouse</h2>
+
+# Body content
+<p class="font-body text-base-content">Your content here</p>
+```
+
+#### Color Usage
+```elixir
+# Primary elements (buttons, links)
+<button class="vintage-btn vintage-btn-primary">Action</button>
+
+# Secondary elements  
+<div class="vintage-card">Content</div>
+
+# Text hierarchy
+<p class="text-primary">Main content</p>
+<p class="text-secondary">Supporting text</p>
+<p class="text-muted">Subtle text</p>
+```
+
+#### Component Patterns
+```elixir
+# Page structure with ornaments
+<div class="text-center space-y-4">
+  <div class="vintage-ornament">
+    <div class="vintage-ornament-diamond"></div>
+  </div>
+  <h1 class="font-display text-4xl text-primary">Page Title</h1>
+  <!-- content -->
+  <div class="vintage-ornament">
+    <div class="vintage-ornament-diamond"></div>
+  </div>
+</div>
+
+# Card with baseball stitches
+<div class="vintage-card baseball-stitches p-6">
+  <!-- card content -->
+</div>
+
+# Theme-appropriate wrapper
+<Layouts.app flash={@flash} current_user={@current_user}>
+  <!-- page content -->
+</Layouts.app>
+```
+
+### Design Rules
+
+#### ✅ Always Use
+- `<Layouts.app>` wrapper for page templates
+- Vintage card classes for content containers
+- Baseball-stitch borders for authentic feel
+- Paper texture overlay for aged appearance
+- Font-heading for secondary headings
+- Font-display for primary headings
+- Font-body for paragraph content
+
+#### ❌ Never Use
+- Generic modern buttons (use vintage-btn classes)
+- Plain white backgrounds (use vintage-card)
+- System fonts (use specified vintage fonts)
+- Modern flat designs (prefer vintage depth and texture)
+- DaisyUI defaults directly (always customize for baseball theme)
+
+#### 🔧 Customization
+When adding new components, follow this pattern:
+1. Use vintage card styling as base
+2. Add appropriate baseball stitch patterns
+3. Apply period-appropriate typography
+4. Include hover states with vintage feel
+5. Ensure theme compatibility (light/dark)
+6. Test both theme modes for consistency
+
+This design system creates a cohesive, memorable experience that truly captures the 1920s baseball era while maintaining modern usability and accessibility.
 
 ### LiveView streams
 
