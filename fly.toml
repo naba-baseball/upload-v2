@@ -9,6 +9,9 @@ kill_signal = 'SIGTERM'
 
 [build]
 
+[deploy]
+release_command = "/app/bin/migrate"
+
 [env]
   DATABASE_PATH = '/mnt/name/name.db'
   PHX_HOST = 'nabaleague.com'
