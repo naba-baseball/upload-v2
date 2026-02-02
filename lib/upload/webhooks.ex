@@ -132,20 +132,18 @@ defmodule Upload.Webhooks do
 
   defp build_payload(%SiteWebhook{} = webhook, %Site{} = site, event) do
     content =
-      format_role_mention(webhook.role_mention) <> " **#{site.name}** has #{event_action(event)}"
+      format_role_mention(webhook.role_mention) <> " **#{Site.format_site_url(site)}** has #{event_action(event)}"
 
     %{
       content: content,
       embeds: [
         %{
           title: "Deployment #{event_result(event)}",
-          description: "**#{site.name}** has been #{event_action(event)}",
+          description: "**#{site.name}** has #{event_action(event)}",
           color: event_color(event),
           timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
           fields: [
             %{name: "Site", value: site.name, inline: true},
-            %{name: "Subdomain", value: site.subdomain, inline: true},
-            %{name: "Status", value: site.deployment_status, inline: true}
           ],
           url: Site.format_site_url(site)
         }
