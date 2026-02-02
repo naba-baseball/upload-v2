@@ -150,7 +150,7 @@ defmodule UploadWeb.SiteUploadLive do
                     last_deployed_at={@site.last_deployed_at}
                     error={@site.last_deployment_error}
                   />
-                  <.site_url_links site={@site} icon="hero-globe-alt" />
+                  <.site_url_links site={@site} />
                 </div>
               </div>
             </div>

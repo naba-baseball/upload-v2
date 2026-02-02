@@ -58,18 +58,44 @@ defmodule UploadWeb.HomeLive do
           <% else %>
             <%!-- Vintage Site Cards Grid --%>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
-              <div
-                :for={site <- @sites}
-                class="vintage-card card-hover p-6"
-              >
-                <div class="mb-4">
-                  <h3 class="font-display text-xl mb-2">
-                    {site.name}
-                  </h3>
-                  <div class="h-1 w-16 bg-accent rounded-full"></div>
-                </div>
-                <.site_url_links site={site} icon="hero-arrow-top-right-on-square" />
-              </div>
+              <%= for site <- @sites do %>
+                <%= if site.routing_mode == "both" do %>
+                  <div class="vintage-card p-6">
+                    <div class="mb-4">
+                      <h3 class="font-display text-xl mb-2">
+                        {site.name}
+                      </h3>
+                      <div class="h-1 w-16 bg-accent rounded-full"></div>
+                    </div>
+                    <div class="space-y-3">
+                      <.site_url_links site={site} />
+                    </div>
+                  </div>
+                <% else %>
+                  <.link
+                    href={Site.format_site_url(site)}
+                    rel="noopener noreferrer"
+                    class="vintage-card card-hover p-6 block group"
+                  >
+                    <div class="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 class="font-display text-xl mb-2 group-hover:text-accent transition-colors">
+                          {site.name}
+                        </h3>
+                        <div class="h-1 w-16 bg-accent rounded-full"></div>
+                      </div>
+                    </div>
+
+                    <div class="font-mono text-sm text-secondary/70 group-hover:text-secondary transition-colors truncate">
+                      <%= if site.routing_mode == "subdomain" do %>
+                        {Site.full_domain(site)}
+                      <% else %>
+                        {Site.subpath(site)}
+                      <% end %>
+                    </div>
+                  </.link>
+                <% end %>
+              <% end %>
             </div>
           <% end %>
 

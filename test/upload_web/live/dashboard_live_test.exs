@@ -97,7 +97,7 @@ defmodule UploadWeb.DashboardLiveTest do
       assert html =~ "Your Sites"
     end
 
-    test "site URLs open in new tab", %{conn: conn} do
+    test "site URLs do not open in new tab", %{conn: conn} do
       user = user_fixture()
       site = site_fixture()
       assign_user_to_site(user, site)
@@ -106,7 +106,7 @@ defmodule UploadWeb.DashboardLiveTest do
 
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
-      assert html =~ ~s(target="_blank")
+      refute html =~ ~s(target="_blank")
       assert html =~ ~s(rel="noopener noreferrer")
     end
 

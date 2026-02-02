@@ -163,7 +163,7 @@ defmodule UploadWeb.DashboardLive do
                     </div>
                   </div>
                   <div class="text-right">
-                    <.site_url_links site={@single_site} icon="hero-arrow-top-right-on-square" />
+                    <.site_url_links site={@single_site} />
                   </div>
                 </div>
               </div>
@@ -245,7 +245,7 @@ defmodule UploadWeb.DashboardLive do
                   </div>
 
                   <div class="space-y-3">
-                    <.site_url_links site={site} icon="hero-globe-alt" />
+                    <.site_url_links site={site} />
                   </div>
                 </div>
 

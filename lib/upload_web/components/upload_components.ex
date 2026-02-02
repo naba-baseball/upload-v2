@@ -158,12 +158,10 @@ defmodule UploadWeb.UploadComponents do
   ## Examples
 
       <.site_url_links site={@site} />
-      <.site_url_links site={site} icon="hero-arrow-top-right-on-square" />
       <.site_url_links site={@site} display="full_url" />
 
   """
   attr :site, :map, required: true
-  attr :icon, :string, default: nil, doc: "Optional icon name to display before each link"
 
   attr :display, :string,
     default: "domain",
@@ -175,16 +173,9 @@ defmodule UploadWeb.UploadComponents do
       <%= if @site.routing_mode in ["subdomain", "subpath"] do %>
         <.link
           href={Upload.Sites.Site.format_site_url(@site)}
-          target="_blank"
           rel="noopener noreferrer"
-          class={[
-            "font-mono hover:text-accent hover:underline",
-            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
-          ]}
+          class="block font-mono hover:text-accent hover:underline"
         >
-          <%= if @icon do %>
-            <.icon name={@icon} class="w-4 h-4" />
-          <% end %>
           <%= if @display == "full_url" do %>
             {Upload.Sites.Site.format_site_url(@site)}
           <% else %>
@@ -199,16 +190,9 @@ defmodule UploadWeb.UploadComponents do
       <%= if @site.routing_mode == "both" do %>
         <.link
           href={Upload.Sites.Site.format_site_url(@site, :subdomain)}
-          target="_blank"
           rel="noopener noreferrer"
-          class={[
-            "font-mono hover:text-accent hover:underline",
-            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
-          ]}
+          class="block font-mono hover:text-accent hover:underline"
         >
-          <%= if @icon do %>
-            <.icon name={@icon} class="w-4 h-4" />
-          <% end %>
           <%= if @display == "full_url" do %>
             {Upload.Sites.Site.format_site_url(@site, :subdomain)}
           <% else %>
@@ -217,16 +201,9 @@ defmodule UploadWeb.UploadComponents do
         </.link>
         <.link
           href={Upload.Sites.Site.format_site_url(@site, :subpath)}
-          target="_blank"
           rel="noopener noreferrer"
-          class={[
-            "font-mono hover:text-accent hover:underline",
-            if(@icon, do: "inline-flex items-center gap-2 text-sm", else: "block")
-          ]}
+          class="block font-mono hover:text-accent hover:underline"
         >
-          <%= if @icon do %>
-            <.icon name={@icon} class="w-4 h-4" />
-          <% end %>
           <%= if @display == "full_url" do %>
             {Upload.Sites.Site.format_site_url(@site, :subpath)}
           <% else %>

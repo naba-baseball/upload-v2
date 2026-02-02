@@ -245,7 +245,6 @@ defmodule UploadWeb.Admin.SitesLive do
             <span class="text-gray-500 dark:text-gray-400">Subdomain:</span>
             <.link
               href={"#{Site.url_scheme()}#{subdomain_preview(@form[:subdomain].value, @base_domain)}"}
-              target="_blank"
               class="font-mono hover:text-accent hover:underline"
             >
               {Site.url_scheme()}{subdomain_preview(@form[:subdomain].value, @base_domain)}
@@ -255,7 +254,6 @@ defmodule UploadWeb.Admin.SitesLive do
             <span class="text-secondary">Subpath:</span>
             <.link
               href={"#{Site.url_scheme()}#{@base_domain}/sites/#{subdomain_value(@form[:subdomain].value)}"}
-              target="_blank"
               class="font-mono hover:text-accent hover:underline"
             >
               {Site.url_scheme()}{@base_domain}/sites/{subdomain_value(@form[:subdomain].value)}
