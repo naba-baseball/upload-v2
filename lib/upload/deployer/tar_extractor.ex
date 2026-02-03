@@ -50,8 +50,8 @@ defmodule Upload.Deployer.TarExtractor do
   # Size limits to prevent zip bomb attacks
   # 500 MB compressed (matches upload limit)
   @max_compressed_size 524_288_000
-  # 1 GB decompressed
-  @max_decompressed_size 1_073_741_824
+  # 2 GB decompressed
+  @max_decompressed_size 1_073_741_824 * 3
 
   # Pre-computed zero block for efficient end-of-archive detection
   @zero_block :binary.copy(<<0>>, @block_size)
